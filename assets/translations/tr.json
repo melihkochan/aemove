@@ -1,0 +1,104 @@
+{
+  "app": {
+    "name": "Aemove"
+  },
+  "common": {
+    "language": "Dil",
+    "credits": "Krediler",
+    "apply": "Uygula",
+    "comingSoon": "Yakında",
+    "deleteAccount": "Hesabı ve verileri sil",
+    "privacyPolicy": "Gizlilik Politikası",
+    "termsOfService": "Kullanım Şartları"
+  },
+  "nav": {
+    "home": "Ana Sayfa",
+    "create": "Oluştur",
+    "videos": "Videolarım",
+    "account": "Hesap"
+  },
+  "home": {
+    "subtitle": "Çoklu model video stüdyosu",
+    "statsUsage": "Şablon kullanımı",
+    "statsCredits": "Krediler",
+    "modesTitle": "Modlar",
+    "categoriesTitle": "Kategoriler",
+    "templatesAll": "Hazır Şablonlar",
+    "templatesSuffix": "Şablonları",
+    "templatesDescription": "Görseller hazırlanıyor • Her şablon ilgili yapay zekâ modeline bağlanacak.",
+    "quickActionsTitle": "Hızlı Başlangıçlar",
+    "quickActionsDescription": "Medya hazır olduğunda yayına alabileceğin akışların taslağı.",
+    "quickActionsStatus": "Hazırlanıyor",
+    "quickActionsPreview": "Önizle",
+    "quickActionToast": "Bu akış henüz tasarım aşamasında.",
+    "trendsTitle": "Model Trendleri",
+    "trendsDescription": "Video örnekleri yolda. Lansman görüntüleri için bizi takip et.",
+    "visualPlaceholder": "Görsel hazırlanacak",
+    "usageRuns": "kullanım",
+    "creditsSuffix": "kredi",
+    "noTemplates": "Bu kategoride henüz şablon yok. Yeni presetler çok yakında.",
+    "modeToast": "{mode} modu yakında tamamen özelleştirilebilir olacak.",
+    "languageShort": {
+      "en": "EN",
+      "tr": "TR"
+    },
+    "modes": {
+      "custom": "Özel",
+      "effects": "Efektler",
+      "camera": "Kamera",
+      "restore": "Onarım",
+      "swap": "Değiştir",
+      "newBadge": "Yeni"
+    },
+    "modeBadges": {
+      "new": "Yeni",
+      "beta": "Beta"
+    },
+    "categories": {
+      "all": "Hepsi",
+      "popular": "Popüler",
+      "trend": "Trend",
+      "cinematic": "Sinematik",
+      "fantasy": "Fantastik",
+      "camera": "Kamera Hareketleri",
+      "polaroid": "Polaroid",
+      "vintage": "Vintage",
+      "futuristic": "Fütüristik",
+      "artistic": "Sanatsal"
+    }
+  },
+  "profile": {
+    "title": "Hesap",
+    "creditsTitle": "Kredi bakiyen",
+    "nextRefresh": "Sonraki yenileme",
+    "addCredits": "Kredi ekle",
+    "tabs": {
+      "subscriptions": "Abonelikler",
+      "packs": "Kredi Paketleri"
+    },
+    "premium": {
+      "title": "Premium'a Geç",
+      "line1": "Krediler her ay otomatik yenilenir",
+      "line2": "Her yüklemede anında etkinleşir",
+      "line3": "Düzenli içerik üreticileri için en iyi değer"
+    },
+    "rate": "Aemove'u değerlendir",
+    "rateSubtitle": "Deneyimini mağazalarda paylaş",
+    "featureRequests": "Özellik önerileri",
+    "featureSubtitle": "Sırada ne geliştirelim, bize yaz",
+    "weeklyReminders": "Haftalık hatırlatmalar",
+    "weeklySubtitle": "Krediler yenilendiğinde bildirim al",
+    "videoCompleted": "Video tamamlandı",
+    "videoSubtitle": "Render bitince push bildirimi al",
+    "contactSupport": "Destek ekibi",
+    "contactSubtitle": "Canlı sohbet, e-posta ve topluluk",
+    "restore": "Satın alımları geri yükle",
+    "creditsLabel": "{{credits}} kredi",
+    "planMonthly": "Aylık",
+    "planWeekly": "Haftalık",
+    "planYearly": "Yıllık",
+    "planOnetime": "Tek seferlik",
+    "badgeBest": "En İyi"
+  }
+}
+

@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 
 import '../data/home_content.dart';
@@ -16,116 +17,11 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   String _selectedCategoryId = videoCategories.first.id;
   String _selectedModeId = homeModes.first.id;
-  String _selectedLanguage = 'TR';
   final int _availableCredits = 24;
 
-  static const Map<String, Map<String, String>> _strings = {
-    'EN': {
-      'headerSubtitle': 'Multi-model video studio',
-      'usageLabel': 'Template runs',
-      'creditsLabel': 'Credits',
-      'languageLabel': 'Language',
-      'modesTitle': 'Modes',
-      'categoriesTitle': 'Categories',
-      'templatesAllTitle': 'All Templates',
-      'templatesSuffix': 'Templates',
-      'templatesDescription':
-          'Visual placeholders • Each template will connect to its AI model.',
-      'quickActionsTitle': 'Quick Launch',
-      'quickActionsDescription':
-          'Prototype flows you can publish once media is ready.',
-      'quickActionStatus': 'Preparing',
-      'quickActionCTA': 'Preview',
-      'quickActionToast': 'This flow is still being designed.',
-      'modeToast': '{mode} mode will be fully configurable soon.',
-      'trendsTitle': 'Model Trends',
-      'trendsDescription':
-          'Video examples are on the way. Stay tuned for launch footage.',
-      'visualPlaceholder': 'Visual placeholder',
-      'usageRuns': 'runs',
-      'creditsSuffix': 'credits',
-      'apply': 'Apply',
-      'noTemplates':
-          'No templates for this category yet. We are adding more presets very soon.',
-    },
-    'TR': {
-      'headerSubtitle': 'Çoklu model video stüdyosu',
-      'usageLabel': 'Şablon kullanımı',
-      'creditsLabel': 'Krediler',
-      'languageLabel': 'Dil',
-      'modesTitle': 'Modlar',
-      'categoriesTitle': 'Kategoriler',
-      'templatesAllTitle': 'Hazır Şablonlar',
-      'templatesSuffix': 'Şablonları',
-      'templatesDescription':
-          'Görseller yakında • Her şablon ilgili yapay zekâ modeline bağlanacak.',
-      'quickActionsTitle': 'Hızlı Başlangıçlar',
-      'quickActionsDescription':
-          'Medya hazır olduğunda yayınlayabileceğin akışların taslağı.',
-      'quickActionStatus': 'Hazırlanıyor',
-      'quickActionCTA': 'Önizle',
-      'quickActionToast': 'Bu akış henüz tasarım aşamasında.',
-      'modeToast': '{mode} modu yakında tamamen özelleştirilebilir olacak.',
-      'trendsTitle': 'Model Trendleri',
-      'trendsDescription':
-          'Video örnekleri yolda. Lansman görüntüleri için bizi takip et.',
-      'visualPlaceholder': 'Görsel hazırlanacak',
-      'usageRuns': 'kullanım',
-      'creditsSuffix': 'kredi',
-      'apply': 'Uygula',
-      'noTemplates':
-          'Bu kategoride henüz şablon yok. Çok yakında yeni presetler ekliyoruz.',
-    },
-  };
+  static const Map<String, String> _localeFlags = {'en': '🇺🇸', 'tr': '🇹🇷'};
 
-  static const Map<String, Map<String, String>> _categoryTitles = {
-    'EN': {
-      'all': 'All',
-      'popular': 'Popular',
-      'trend': 'Trending',
-      'cinematic': 'Cinematic',
-      'fantasy': 'Fantasy',
-      'camera': 'Camera Moves',
-      'polaroid': 'Polaroid',
-      'vintage': 'Vintage',
-      'futuristic': 'Futuristic',
-      'artistic': 'Artistic',
-    },
-    'TR': {
-      'all': 'Hepsi',
-      'popular': 'Popüler',
-      'trend': 'Trend',
-      'cinematic': 'Sinematik',
-      'fantasy': 'Fantastik',
-      'camera': 'Kamera Hareketleri',
-      'polaroid': 'Polaroid',
-      'vintage': 'Vintage',
-      'futuristic': 'Fütüristik',
-      'artistic': 'Sanatsal',
-    },
-  };
-
-  static const Map<String, Map<String, String>> _modeTitles = {
-    'EN': {
-      'custom': 'Custom',
-      'effects': 'Effects',
-      'camera': 'Camera',
-      'restore': 'Restore',
-      'swap': 'Character Swap',
-    },
-    'TR': {
-      'custom': 'Özel',
-      'effects': 'Efektler',
-      'camera': 'Kamera',
-      'restore': 'Restore',
-      'swap': 'Karakter Değişimi',
-    },
-  };
-
-  static const Map<String, Map<String, String>> _modeBadges = {
-    'EN': {'new': 'New', 'beta': 'Beta'},
-    'TR': {'new': 'Yeni', 'beta': 'Beta'},
-  };
+  String _homeTr(String key) => 'home.$key'.tr();
 
   List<CapabilityTemplate> get _filteredCapabilities {
     if (_selectedCategoryId == 'all') {
@@ -151,12 +47,24 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  String _modeTitleLabel(String id) =>
-      _modeTitles[_selectedLanguage]?[id] ??
-      homeModes.firstWhere((mode) => mode.id == id).title;
+  String _modeTitleLabel(String id) {
+    final key = 'home.modes.$id';
+    final translated = key.tr();
+    if (translated != key) {
+      return translated;
+    }
+    return homeModes.firstWhere((mode) => mode.id == id).title;
+  }
 
-  String? _modeBadgeLabel(String? key) =>
-      key == null ? null : _modeBadges[_selectedLanguage]?[key];
+  String? _modeBadgeLabel(String? key) {
+    if (key == null) return null;
+    final badgeKey = 'home.modeBadges.$key';
+    final translated = badgeKey.tr();
+    if (translated != badgeKey) {
+      return translated;
+    }
+    return key.toUpperCase();
+  }
 
   void _showToast(String message) {
     ScaffoldMessenger.of(
@@ -165,13 +73,13 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _handleQuickAction(HomeQuickAction action) {
-    _showToast('${action.title} • ${_t('quickActionToast')}');
+    _showToast('${action.title} • ${_homeTr('quickActionToast')}');
   }
 
   void _handleModeTap(HomeMode mode) {
     setState(() => _selectedModeId = mode.id);
     final label = _modeTitleLabel(mode.id);
-    _showToast(_t('modeToast').replaceFirst('{mode}', label));
+    _showToast('home.modeToast'.tr(namedArgs: {'mode': label}));
   }
 
   void _handleTrend(HomeTrend trend) {
@@ -210,29 +118,30 @@ class _HomeScreenState extends State<HomeScreen> {
     _openGeneration(context, model);
   }
 
-  String _t(String key) => _strings[_selectedLanguage]![key]!;
-
-  String _categoryTitle(String id) =>
-      _categoryTitles[_selectedLanguage]?[id] ?? id;
-
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final locale = context.locale;
     final capabilities = _filteredCapabilities;
     final totalUsage = capabilities.fold<int>(
       0,
       (sum, template) => sum + template.usageCount,
     );
-    final categoryTitle = _categoryTitle(_selectedCategoryId);
+    final selectedCategoryLabel = 'home.categories.$_selectedCategoryId'.tr();
     final templatesTitle = _selectedCategoryId == 'all'
-        ? _t('templatesAllTitle')
-        : '$categoryTitle ${_t('templatesSuffix')}';
+        ? _homeTr('templatesAll')
+        : '$selectedCategoryLabel ${_homeTr('templatesSuffix')}';
+    final usageLabel = _homeTr('statsUsage');
+    final creditsLabel = _homeTr('statsCredits');
+    final quickActionStatus = _homeTr('quickActionsStatus');
+    final quickActionCTA = _homeTr('quickActionsPreview');
+    final languageLabel = 'common.language'.tr();
 
     return Scaffold(
       body: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
-            colors: [Color(0xFF05060A), Color(0xFF0F172A)],
+            colors: [Color(0xFF060d1f), Color(0xFF0c1533)],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
           ),
@@ -247,20 +156,22 @@ class _HomeScreenState extends State<HomeScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       _HeaderBar(
-                        subtitle: _t('headerSubtitle'),
+                        subtitle: _homeTr('subtitle'),
                         totalUsage: totalUsage,
                         credits: _availableCredits,
-                        usageLabel: _t('usageLabel'),
-                        creditsLabel: _t('creditsLabel'),
-                        languageLabel: _t('languageLabel'),
-                        selectedLanguage: _selectedLanguage,
-                        onLanguageChanged: (value) {
-                          setState(() => _selectedLanguage = value);
+                        usageLabel: usageLabel,
+                        creditsLabel: creditsLabel,
+                        languageLabel: languageLabel,
+                        selectedLocale: locale,
+                        locales: context.supportedLocales,
+                        localeFlags: _localeFlags,
+                        onLanguageChanged: (newLocale) {
+                          context.setLocale(newLocale);
                         },
                       ),
                       const SizedBox(height: 24),
                       Text(
-                        _t('modesTitle'),
+                        _homeTr('modesTitle'),
                         style: theme.textTheme.titleLarge?.copyWith(
                           fontWeight: FontWeight.w700,
                         ),
@@ -290,7 +201,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                       const SizedBox(height: 24),
                       Text(
-                        _t('categoriesTitle'),
+                        _homeTr('categoriesTitle'),
                         style: theme.textTheme.titleLarge?.copyWith(
                           fontWeight: FontWeight.w700,
                         ),
@@ -307,7 +218,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             final category = videoCategories[index];
                             final isActive = _selectedCategoryId == category.id;
                             return CategoryChip(
-                              label: _categoryTitle(category.id),
+                              label: 'home.categories.${category.id}'.tr(),
                               color: category.color,
                               active: isActive,
                               onTap: () => setState(
@@ -326,7 +237,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                       const SizedBox(height: 12),
                       Text(
-                        _t('templatesDescription'),
+                        _homeTr('templatesDescription'),
                         style: theme.textTheme.bodyLarge?.copyWith(
                           color: Colors.white70,
                         ),
@@ -349,7 +260,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             color: Colors.white.withValues(alpha: 0.02),
                           ),
                           child: Text(
-                            _t('noTemplates'),
+                            _homeTr('noTemplates'),
                             style: const TextStyle(color: Colors.white70),
                           ),
                         ),
@@ -364,16 +275,15 @@ class _HomeScreenState extends State<HomeScreen> {
                             ),
                         delegate: SliverChildBuilderDelegate((context, index) {
                           final template = capabilities[index];
-                          final translatedCategory = _categoryTitle(
-                            template.categoryId,
-                          );
+                          final translatedCategory =
+                              'home.categories.${template.categoryId}'.tr();
                           return _CapabilityCard(
                             template: template,
                             categoryLabel: translatedCategory,
-                            placeholderLabel: _t('visualPlaceholder'),
-                            usageLabel: _t('usageRuns'),
-                            creditsLabel: _t('creditsSuffix'),
-                            applyLabel: _t('apply'),
+                            placeholderLabel: _homeTr('visualPlaceholder'),
+                            usageLabel: _homeTr('usageRuns'),
+                            creditsLabel: _homeTr('creditsSuffix'),
+                            applyLabel: 'common.apply'.tr(),
                             onTap: () => _handleCapabilityTap(template),
                           );
                         }, childCount: capabilities.length),
@@ -386,14 +296,14 @@ class _HomeScreenState extends State<HomeScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        _t('quickActionsTitle'),
+                        _homeTr('quickActionsTitle'),
                         style: theme.textTheme.titleLarge?.copyWith(
                           fontWeight: FontWeight.w700,
                         ),
                       ),
                       const SizedBox(height: 12),
                       Text(
-                        _t('quickActionsDescription'),
+                        _homeTr('quickActionsDescription'),
                         style: theme.textTheme.bodyLarge?.copyWith(
                           color: Colors.white70,
                         ),
@@ -410,8 +320,8 @@ class _HomeScreenState extends State<HomeScreen> {
                             final action = homeQuickActions[index];
                             return _QuickActionCard(
                               action: action,
-                              statusLabel: _t('quickActionStatus'),
-                              actionLabel: _t('quickActionCTA'),
+                              statusLabel: quickActionStatus,
+                              actionLabel: quickActionCTA,
                               onTap: () => _handleQuickAction(action),
                             );
                           },
@@ -428,14 +338,14 @@ class _HomeScreenState extends State<HomeScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        _t('trendsTitle'),
+                        _homeTr('trendsTitle'),
                         style: theme.textTheme.titleLarge?.copyWith(
                           fontWeight: FontWeight.w700,
                         ),
                       ),
                       const SizedBox(height: 12),
                       Text(
-                        _t('trendsDescription'),
+                        _homeTr('trendsDescription'),
                         style: theme.textTheme.bodyLarge?.copyWith(
                           color: Colors.white70,
                         ),
@@ -477,7 +387,9 @@ class _HeaderBar extends StatelessWidget {
     required this.usageLabel,
     required this.creditsLabel,
     required this.languageLabel,
-    required this.selectedLanguage,
+    required this.selectedLocale,
+    required this.locales,
+    required this.localeFlags,
     required this.onLanguageChanged,
   });
 
@@ -487,8 +399,10 @@ class _HeaderBar extends StatelessWidget {
   final String usageLabel;
   final String creditsLabel;
   final String languageLabel;
-  final String selectedLanguage;
-  final ValueChanged<String> onLanguageChanged;
+  final Locale selectedLocale;
+  final List<Locale> locales;
+  final Map<String, String> localeFlags;
+  final ValueChanged<Locale> onLanguageChanged;
 
   @override
   Widget build(BuildContext context) {
@@ -526,20 +440,39 @@ class _HeaderBar extends StatelessWidget {
                 color: Colors.white.withValues(alpha: 0.06),
                 border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
               ),
-              child: PopupMenuButton<String>(
+              child: PopupMenuButton<Locale>(
+                initialValue: selectedLocale,
                 onSelected: onLanguageChanged,
                 color: theme.colorScheme.surface,
-                itemBuilder: (context) => const [
-                  PopupMenuItem(value: 'EN', child: Text('English')),
-                  PopupMenuItem(value: 'TR', child: Text('Türkçe')),
-                ],
+                itemBuilder: (context) => locales
+                    .map(
+                      (locale) => PopupMenuItem<Locale>(
+                        value: locale,
+                        child: Row(
+                          children: [
+                            Text(
+                              localeFlags[locale.languageCode] ?? '🌐',
+                              style: const TextStyle(fontSize: 16),
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              'home.languageShort.${locale.languageCode}'.tr(),
+                            ),
+                          ],
+                        ),
+                      ),
+                    )
+                    .toList(),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.language, size: 18, color: Colors.white70),
+                    Text(
+                      localeFlags[selectedLocale.languageCode] ?? '🌐',
+                      style: const TextStyle(fontSize: 16),
+                    ),
                     const SizedBox(width: 8),
                     Text(
-                      '$languageLabel: $selectedLanguage',
+                      '$languageLabel: ${'home.languageShort.${selectedLocale.languageCode}'.tr()}',
                       style: theme.textTheme.labelLarge?.copyWith(
                         color: Colors.white,
                         fontWeight: FontWeight.w600,
@@ -730,52 +663,6 @@ class _ModeChip extends StatelessWidget {
             ),
           ],
         ),
-      ),
-    );
-  }
-}
-
-class _MetricPill extends StatelessWidget {
-  const _MetricPill({
-    required this.icon,
-    required this.label,
-    required this.value,
-    this.accent,
-  });
-
-  final IconData icon;
-  final String label;
-  final String value;
-  final Color? accent;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final pillColor =
-        accent?.withValues(alpha: 0.2) ?? Colors.white.withValues(alpha: 0.08);
-    final iconColor = accent ?? Colors.white70;
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(16),
-        color: pillColor,
-        border: Border.all(
-          color: accent?.withValues(alpha: 0.3) ?? Colors.transparent,
-        ),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 14, color: iconColor),
-          const SizedBox(width: 6),
-          Text(
-            '$value $label',
-            style: theme.textTheme.labelSmall?.copyWith(
-              color: Colors.white,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ],
       ),
     );
   }
@@ -1042,8 +929,19 @@ class _CapabilityCard extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
-        color: Colors.white.withValues(alpha: 0.02),
+        gradient: const LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [Color(0xFF121b33), Color(0xFF0b1226)],
+        ),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.25),
+            blurRadius: 20,
+            offset: const Offset(0, 12),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1150,20 +1048,61 @@ class _CapabilityCard extends StatelessWidget {
                     ),
                   ),
                   const Spacer(),
-                  Wrap(
-                    spacing: 10,
-                    runSpacing: 10,
+                  Row(
                     children: [
-                      _MetricPill(
-                        icon: Icons.download_done_outlined,
-                        label: usageLabel,
-                        value: '${template.usageCount}',
+                      Icon(
+                        Icons.download_done_outlined,
+                        size: 16,
+                        color: Colors.white54,
                       ),
-                      _MetricPill(
-                        icon: Icons.token,
-                        label: creditsLabel,
-                        value: '+${template.creditCost}',
-                        accent: accent,
+                      const SizedBox(width: 6),
+                      Expanded(
+                        child: Text(
+                          '${template.usageCount} $usageLabel',
+                          maxLines: 1,
+                          overflow: TextOverflow.fade,
+                          softWrap: false,
+                          style: theme.textTheme.labelSmall?.copyWith(
+                            color: Colors.white60,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 6,
+                        ),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(16),
+                          gradient: LinearGradient(
+                            colors: [
+                              accent.withValues(alpha: 0.42),
+                              accent.withValues(alpha: 0.24),
+                            ],
+                          ),
+                          border: Border.all(
+                            color: accent.withValues(alpha: 0.5),
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(
+                              Icons.token,
+                              size: 14,
+                              color: Colors.white,
+                            ),
+                            const SizedBox(width: 6),
+                            Text(
+                              '+${template.creditCost} $creditsLabel',
+                              style: theme.textTheme.labelSmall?.copyWith(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ],
                   ),

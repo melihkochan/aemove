@@ -1,0 +1,104 @@
+{
+  "app": {
+    "name": "Aemove"
+  },
+  "common": {
+    "language": "Language",
+    "credits": "Credits",
+    "apply": "Apply",
+    "comingSoon": "Coming soon",
+    "deleteAccount": "Delete account & data",
+    "privacyPolicy": "Privacy Policy",
+    "termsOfService": "Terms of Service"
+  },
+  "nav": {
+    "home": "Home",
+    "create": "Create",
+    "videos": "My Videos",
+    "account": "Account"
+  },
+  "home": {
+    "subtitle": "Multi-model video studio",
+    "statsUsage": "Template runs",
+    "statsCredits": "Credits",
+    "modesTitle": "Modes",
+    "categoriesTitle": "Categories",
+    "templatesAll": "All Templates",
+    "templatesSuffix": "Templates",
+    "templatesDescription": "Visual placeholders • Each template will connect to its AI model.",
+    "quickActionsTitle": "Quick Start",
+    "quickActionsDescription": "Prototype flows to ship once media is ready.",
+    "quickActionsStatus": "Preparing",
+    "quickActionsPreview": "Preview",
+    "quickActionToast": "This flow is still being designed.",
+    "trendsTitle": "Model Trends",
+    "trendsDescription": "Video examples are on the way. Follow launch footage soon.",
+    "visualPlaceholder": "Visual placeholder",
+    "usageRuns": "runs",
+    "creditsSuffix": "credits",
+    "noTemplates": "No templates in this category yet. Fresh presets are coming soon.",
+    "modeToast": "{mode} mode will be fully configurable soon.",
+    "languageShort": {
+      "en": "EN",
+      "tr": "TR"
+    },
+    "modes": {
+      "custom": "Custom",
+      "effects": "Effects",
+      "camera": "Camera",
+      "restore": "Restore",
+      "swap": "Character Swap",
+      "newBadge": "New"
+    },
+    "modeBadges": {
+      "new": "New",
+      "beta": "Beta"
+    },
+    "categories": {
+      "all": "All",
+      "popular": "Popular",
+      "trend": "Trending",
+      "cinematic": "Cinematic",
+      "fantasy": "Fantasy",
+      "camera": "Camera Moves",
+      "polaroid": "Polaroid",
+      "vintage": "Vintage",
+      "futuristic": "Futuristic",
+      "artistic": "Artistic"
+    }
+  },
+  "profile": {
+    "title": "Account",
+    "creditsTitle": "Your credits",
+    "nextRefresh": "Next refresh",
+    "addCredits": "Add credits",
+    "tabs": {
+      "subscriptions": "Subscriptions",
+      "packs": "Credit Packs"
+    },
+    "premium": {
+      "title": "Go Premium",
+      "line1": "Credits renew every month automatically",
+      "line2": "Instant activation for every top-up",
+      "line3": "Best value for regular creators"
+    },
+    "rate": "Rate Aemove",
+    "rateSubtitle": "Share your experience on the stores",
+    "featureRequests": "Feature requests",
+    "featureSubtitle": "Tell us what we should build next",
+    "weeklyReminders": "Weekly reminders",
+    "weeklySubtitle": "Get notified when your credits refresh",
+    "videoCompleted": "Video completed",
+    "videoSubtitle": "Receive push notifications when renders finish",
+    "contactSupport": "Contact support",
+    "contactSubtitle": "Live chat, email and community",
+    "restore": "Restore purchases",
+    "creditsLabel": "{{credits}} credits",
+    "planMonthly": "Monthly",
+    "planWeekly": "Weekly",
+    "planYearly": "Yearly",
+    "planOnetime": "One-time",
+    "badgeBest": "Best"
+  }
+}
+

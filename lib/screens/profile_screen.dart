@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -12,20 +13,39 @@ class _ProfileScreenState extends State<ProfileScreen> {
   bool _videoCompleted = true;
   int _selectedTab = 0;
 
-  static const _creditPlans = [
-    {'credits': 5, 'price': '₺449,99', 'label': 'Weekly'},
-    {'credits': 20, 'price': '₺1.299,99', 'label': 'Monthly', 'badge': 'Best'},
-    {'credits': 240, 'price': '₺2.999,99', 'label': 'Yearly'},
+  static const _subscriptionPlans = [
+    {'credits': 5, 'price': '₺449,99', 'labelKey': 'profile.planWeekly'},
+    {
+      'credits': 20,
+      'price': '₺1.299,99',
+      'labelKey': 'profile.planMonthly',
+      'badgeKey': 'profile.badgeBest',
+      'highlight': true,
+    },
+    {'credits': 240, 'price': '₺2.999,99', 'labelKey': 'profile.planYearly'},
+  ];
+
+  static const _creditPackPlans = [
+    {'credits': 5, 'price': '₺599,99', 'labelKey': 'profile.planOnetime'},
+    {'credits': 10, 'price': '₺999,99', 'labelKey': 'profile.planOnetime'},
+    {
+      'credits': 20,
+      'price': '₺2.299,99',
+      'labelKey': 'profile.planOnetime',
+      'badgeKey': 'profile.badgeBest',
+      'highlight': true,
+    },
   ];
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final plans = _selectedTab == 0 ? _subscriptionPlans : _creditPackPlans;
 
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          'Account',
+          'profile.title'.tr(),
           style: theme.textTheme.titleLarge?.copyWith(
             fontWeight: FontWeight.w700,
           ),
@@ -41,7 +61,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       body: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
-            colors: [Color(0xFF05060A), Color(0xFF0F172A)],
+            colors: [Color(0xFF061024), Color(0xFF0c1533)],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
           ),
@@ -53,9 +73,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
               _CreditsSummaryCard(availableCredits: 24),
               const SizedBox(height: 28),
               SegmentedButton<int>(
-                segments: const [
-                  ButtonSegment(value: 0, label: Text('Subscriptions')),
-                  ButtonSegment(value: 1, label: Text('Credit Packs')),
+                segments: [
+                  ButtonSegment(
+                    value: 0,
+                    label: Text('profile.tabs.subscriptions'.tr()),
+                  ),
+                  ButtonSegment(
+                    value: 1,
+                    label: Text('profile.tabs.packs'.tr()),
+                  ),
                 ],
                 selected: {_selectedTab},
                 onSelectionChanged: (value) =>
@@ -67,48 +93,71 @@ class _ProfileScreenState extends State<ProfileScreen> {
               Wrap(
                 spacing: 16,
                 runSpacing: 16,
-                children: _creditPlans.map((plan) {
+                children: plans.map((plan) {
+                  final credits = plan['credits'] as int;
+                  final price = plan['price'] as String;
+                  final labelKey = plan['labelKey'] as String;
+                  final badgeKey = plan['badgeKey'] as String?;
+                  final highlight = plan['highlight'] == true;
                   return _CreditPlanCard(
-                    credits: plan['credits'] as int,
-                    price: plan['price'] as String,
-                    label: plan['label'] as String,
-                    badge: plan['badge'] as String?,
-                    highlight:
-                        plan['badge'] != null || plan['label'] == 'Monthly',
+                    credits: credits,
+                    price: price,
+                    label: tr(labelKey),
+                    badge: badgeKey == null ? null : tr(badgeKey),
+                    highlight: highlight,
                   );
                 }).toList(),
               ),
               const SizedBox(height: 32),
+              OutlinedButton.icon(
+                onPressed: () {},
+                icon: const Icon(Icons.refresh_outlined),
+                label: Text('profile.restore'.tr()),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: theme.colorScheme.primary,
+                  side: BorderSide(
+                    color: theme.colorScheme.primary.withValues(alpha: 0.6),
+                  ),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 14,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(18),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 28),
               _QuickActionTile(
                 icon: Icons.star,
-                title: 'Rate Aemove',
-                subtitle: 'Share your experience on the stores',
+                title: 'profile.rate'.tr(),
+                subtitle: 'profile.rateSubtitle'.tr(),
                 onTap: () {},
               ),
               _QuickActionTile(
                 icon: Icons.chat_bubble_outline,
-                title: 'Feature requests',
-                subtitle: 'Tell us what we should build next',
+                title: 'profile.featureRequests'.tr(),
+                subtitle: 'profile.featureSubtitle'.tr(),
                 onTap: () {},
               ),
               _ToggleTile(
                 icon: Icons.calendar_today_outlined,
-                title: 'Weekly reminders',
-                subtitle: 'Get notified when your credits refresh',
+                title: 'profile.weeklyReminders'.tr(),
+                subtitle: 'profile.weeklySubtitle'.tr(),
                 value: _weeklyReminders,
                 onChanged: (value) => setState(() => _weeklyReminders = value),
               ),
               _ToggleTile(
                 icon: Icons.check_circle_outline,
-                title: 'Video completed',
-                subtitle: 'Receive push notifications when renders finish',
+                title: 'profile.videoCompleted'.tr(),
+                subtitle: 'profile.videoSubtitle'.tr(),
                 value: _videoCompleted,
                 onChanged: (value) => setState(() => _videoCompleted = value),
               ),
               _QuickActionTile(
                 icon: Icons.mail_outline,
-                title: 'Contact support',
-                subtitle: 'Live chat, email and community',
+                title: 'profile.contactSupport'.tr(),
+                subtitle: 'profile.contactSubtitle'.tr(),
                 onTap: () {},
               ),
               const SizedBox(height: 24),
@@ -117,12 +166,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 children: [
                   TextButton(
                     onPressed: () {},
-                    child: const Text('Privacy Policy'),
+                    child: Text('common.privacyPolicy'.tr()),
                   ),
                   const Text('·'),
                   TextButton(
                     onPressed: () {},
-                    child: const Text('Terms of Service'),
+                    child: Text('common.termsOfService'.tr()),
                   ),
                 ],
               ),
@@ -130,9 +179,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
               TextButton.icon(
                 onPressed: () {},
                 icon: const Icon(Icons.delete_outline, color: Colors.redAccent),
-                label: const Text(
-                  'Delete account & data',
-                  style: TextStyle(color: Colors.redAccent),
+                label: Text(
+                  'common.deleteAccount'.tr(),
+                  style: const TextStyle(color: Colors.redAccent),
                 ),
               ),
             ],
@@ -187,13 +236,15 @@ class _CreditsSummaryCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Your credits',
+                    'profile.creditsTitle'.tr(),
                     style: theme.textTheme.titleMedium?.copyWith(
                       color: Colors.white70,
                     ),
                   ),
                   Text(
-                    '$availableCredits credits',
+                    'profile.creditsLabel'.tr(
+                      namedArgs: {'credits': '$availableCredits'},
+                    ),
                     style: theme.textTheme.displaySmall?.copyWith(
                       color: Colors.white,
                       fontWeight: FontWeight.w700,
@@ -216,7 +267,7 @@ class _CreditsSummaryCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Next refresh',
+                      'profile.nextRefresh'.tr(),
                       style: theme.textTheme.bodySmall?.copyWith(
                         color: Colors.white70,
                       ),
@@ -235,7 +286,7 @@ class _CreditsSummaryCard extends StatelessWidget {
               ElevatedButton.icon(
                 onPressed: () {},
                 icon: const Icon(Icons.add_rounded),
-                label: const Text('Add credits'),
+                label: Text('profile.addCredits'.tr()),
               ),
             ],
           ),
@@ -260,23 +311,20 @@ class _PremiumInfoSection extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Go Premium',
+            'profile.premium.title'.tr(),
             style: theme.textTheme.titleLarge?.copyWith(
               fontWeight: FontWeight.w700,
             ),
           ),
           const SizedBox(height: 12),
-          _BenefitRow(
-            icon: Icons.refresh,
-            text: 'Credits renew every month automatically',
-          ),
+          _BenefitRow(icon: Icons.refresh, text: 'profile.premium.line1'.tr()),
           _BenefitRow(
             icon: Icons.flash_on_outlined,
-            text: 'Instant activation for every top-up',
+            text: 'profile.premium.line2'.tr(),
           ),
           _BenefitRow(
             icon: Icons.workspace_premium_outlined,
-            text: 'Best value for regular creators',
+            text: 'profile.premium.line3'.tr(),
           ),
         ],
       ),
@@ -352,8 +400,12 @@ class _CreditPlanCard extends StatelessWidget {
                     accent.withValues(alpha: 0.55),
                   ],
                 )
-              : null,
-          color: highlight ? null : Colors.white.withValues(alpha: 0.02),
+              : const LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [Color(0xFF121b33), Color(0xFF0b1226)],
+                ),
+          color: null,
           border: Border.all(
             color: highlight
                 ? accent.withValues(alpha: 0.5)
@@ -384,7 +436,7 @@ class _CreditPlanCard extends StatelessWidget {
               ),
             const SizedBox(height: 12),
             Text(
-              '$credits credits',
+              'profile.creditsLabel'.tr(namedArgs: {'credits': '$credits'}),
               style: theme.textTheme.titleMedium?.copyWith(
                 color: Colors.white,
                 fontWeight: FontWeight.w700,
@@ -489,6 +541,7 @@ class _ToggleTile extends StatelessWidget {
       child: SwitchListTile(
         value: value,
         onChanged: onChanged,
+        activeThumbColor: theme.colorScheme.primary,
         secondary: CircleAvatar(
           radius: 24,
           backgroundColor: theme.colorScheme.primary.withValues(alpha: 0.18),
