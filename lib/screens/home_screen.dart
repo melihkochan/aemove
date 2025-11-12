@@ -735,6 +735,52 @@ class _ModeChip extends StatelessWidget {
   }
 }
 
+class _MetricPill extends StatelessWidget {
+  const _MetricPill({
+    required this.icon,
+    required this.label,
+    required this.value,
+    this.accent,
+  });
+
+  final IconData icon;
+  final String label;
+  final String value;
+  final Color? accent;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final pillColor =
+        accent?.withValues(alpha: 0.2) ?? Colors.white.withValues(alpha: 0.08);
+    final iconColor = accent ?? Colors.white70;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
+        color: pillColor,
+        border: Border.all(
+          color: accent?.withValues(alpha: 0.3) ?? Colors.transparent,
+        ),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 14, color: iconColor),
+          const SizedBox(width: 6),
+          Text(
+            '$value $label',
+            style: theme.textTheme.labelSmall?.copyWith(
+              color: Colors.white,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _QuickActionCard extends StatelessWidget {
   const _QuickActionCard({
     required this.action,
@@ -1104,47 +1150,20 @@ class _CapabilityCard extends StatelessWidget {
                     ),
                   ),
                   const Spacer(),
-                  Row(
+                  Wrap(
+                    spacing: 10,
+                    runSpacing: 10,
                     children: [
-                      Icon(
-                        Icons.download_done_outlined,
-                        size: 16,
-                        color: Colors.white54,
+                      _MetricPill(
+                        icon: Icons.download_done_outlined,
+                        label: usageLabel,
+                        value: '${template.usageCount}',
                       ),
-                      const SizedBox(width: 6),
-                      Expanded(
-                        child: Text(
-                          '${template.usageCount} $usageLabel',
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: theme.textTheme.labelSmall?.copyWith(
-                            color: Colors.white60,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 10,
-                          vertical: 5,
-                        ),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(14),
-                          color: accent.withValues(alpha: 0.18),
-                        ),
-                        child: Row(
-                          children: [
-                            Icon(Icons.token, size: 14, color: accent),
-                            const SizedBox(width: 4),
-                            Text(
-                              '+${template.creditCost} $creditsLabel',
-                              style: theme.textTheme.labelSmall?.copyWith(
-                                color: Colors.white,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ],
-                        ),
+                      _MetricPill(
+                        icon: Icons.token,
+                        label: creditsLabel,
+                        value: '+${template.creditCost}',
+                        accent: accent,
                       ),
                     ],
                   ),
