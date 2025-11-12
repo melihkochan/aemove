@@ -19,8 +19,6 @@ class _HomeScreenState extends State<HomeScreen> {
   String _selectedModeId = homeModes.first.id;
   final int _availableCredits = 24;
 
-  static const Map<String, String> _localeFlags = {'en': '🇺🇸', 'tr': '🇹🇷'};
-
   String _homeTr(String key) => 'home.$key'.tr();
 
   List<CapabilityTemplate> get _filteredCapabilities {
@@ -121,22 +119,13 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final locale = context.locale;
     final capabilities = _filteredCapabilities;
-    final totalUsage = capabilities.fold<int>(
-      0,
-      (sum, template) => sum + template.usageCount,
-    );
     final selectedCategoryLabel = 'home.categories.$_selectedCategoryId'.tr();
     final templatesTitle = _selectedCategoryId == 'all'
         ? _homeTr('templatesAll')
         : '$selectedCategoryLabel ${_homeTr('templatesSuffix')}';
-    final usageLabel = _homeTr('statsUsage');
-    final creditsLabel = _homeTr('statsCredits');
     final quickActionStatus = _homeTr('quickActionsStatus');
     final quickActionCTA = _homeTr('quickActionsPreview');
-    final languageLabel = 'common.language'.tr();
-
     return Scaffold(
       body: Container(
         decoration: const BoxDecoration(
@@ -157,17 +146,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     children: [
                       _HeaderBar(
                         subtitle: _homeTr('subtitle'),
-                        totalUsage: totalUsage,
                         credits: _availableCredits,
-                        usageLabel: usageLabel,
-                        creditsLabel: creditsLabel,
-                        languageLabel: languageLabel,
-                        selectedLocale: locale,
-                        locales: context.supportedLocales,
-                        localeFlags: _localeFlags,
-                        onLanguageChanged: (newLocale) {
-                          context.setLocale(newLocale);
-                        },
                       ),
                       const SizedBox(height: 24),
                       Text(
@@ -177,27 +156,12 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                       ),
                       const SizedBox(height: 12),
-                      SizedBox(
-                        height: 70,
-                        child: ListView.separated(
-                          scrollDirection: Axis.horizontal,
-                          itemCount: homeModes.length,
-                          separatorBuilder: (_, __) =>
-                              const SizedBox(width: 12),
-                          itemBuilder: (context, index) {
-                            final mode = homeModes[index];
-                            final isActive = _selectedModeId == mode.id;
-                            final modeLabel = _modeTitleLabel(mode.id);
-                            final badgeLabel = _modeBadgeLabel(mode.badgeKey);
-                            return _ModeChip(
-                              icon: mode.icon,
-                              label: modeLabel,
-                              badge: badgeLabel,
-                              active: isActive,
-                              onTap: () => _handleModeTap(mode),
-                            );
-                          },
-                        ),
+                      _ModeScroller(
+                        modes: homeModes,
+                        selectedModeId: _selectedModeId,
+                        onModeSelected: _handleModeTap,
+                        titleBuilder: _modeTitleLabel,
+                        badgeBuilder: _modeBadgeLabel,
                       ),
                       const SizedBox(height: 24),
                       Text(
@@ -271,7 +235,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               crossAxisCount: 2,
                               crossAxisSpacing: 18,
                               mainAxisSpacing: 18,
-                              childAspectRatio: 0.68,
+                              childAspectRatio: 0.75,
                             ),
                         delegate: SliverChildBuilderDelegate((context, index) {
                           final template = capabilities[index];
@@ -283,6 +247,8 @@ class _HomeScreenState extends State<HomeScreen> {
                             placeholderLabel: _homeTr('visualPlaceholder'),
                             usageLabel: _homeTr('usageRuns'),
                             creditsLabel: _homeTr('creditsSuffix'),
+                            usageValue: '${template.usageCount}',
+                            creditsValue: '+${template.creditCost}',
                             applyLabel: 'common.apply'.tr(),
                             onTap: () => _handleCapabilityTap(template),
                           );
@@ -382,27 +348,11 @@ class _HomeScreenState extends State<HomeScreen> {
 class _HeaderBar extends StatelessWidget {
   const _HeaderBar({
     required this.subtitle,
-    required this.totalUsage,
     required this.credits,
-    required this.usageLabel,
-    required this.creditsLabel,
-    required this.languageLabel,
-    required this.selectedLocale,
-    required this.locales,
-    required this.localeFlags,
-    required this.onLanguageChanged,
   });
 
   final String subtitle;
-  final int totalUsage;
   final int credits;
-  final String usageLabel;
-  final String creditsLabel;
-  final String languageLabel;
-  final Locale selectedLocale;
-  final List<Locale> locales;
-  final Map<String, String> localeFlags;
-  final ValueChanged<Locale> onLanguageChanged;
 
   @override
   Widget build(BuildContext context) {
@@ -411,6 +361,7 @@ class _HeaderBar extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Expanded(
               child: Column(
@@ -418,94 +369,23 @@ class _HeaderBar extends StatelessWidget {
                 children: [
                   Text(
                     'Aemove',
-                    style: theme.textTheme.titleLarge?.copyWith(
+                    style: theme.textTheme.displaySmall?.copyWith(
                       fontWeight: FontWeight.w800,
                       letterSpacing: -0.4,
                     ),
                   ),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: 6),
                   Text(
                     subtitle,
-                    style: theme.textTheme.bodySmall?.copyWith(
+                    style: theme.textTheme.bodyMedium?.copyWith(
                       color: Colors.white60,
                     ),
                   ),
                 ],
               ),
             ),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(16),
-                color: Colors.white.withValues(alpha: 0.06),
-                border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
-              ),
-              child: PopupMenuButton<Locale>(
-                initialValue: selectedLocale,
-                onSelected: onLanguageChanged,
-                color: theme.colorScheme.surface,
-                itemBuilder: (context) => locales
-                    .map(
-                      (locale) => PopupMenuItem<Locale>(
-                        value: locale,
-                        child: Row(
-                          children: [
-                            Text(
-                              localeFlags[locale.languageCode] ?? '🌐',
-                              style: const TextStyle(fontSize: 16),
-                            ),
-                            const SizedBox(width: 8),
-                            Text(
-                              'home.languageShort.${locale.languageCode}'.tr(),
-                            ),
-                          ],
-                        ),
-                      ),
-                    )
-                    .toList(),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      localeFlags[selectedLocale.languageCode] ?? '🌐',
-                      style: const TextStyle(fontSize: 16),
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      '$languageLabel: ${'home.languageShort.${selectedLocale.languageCode}'.tr()}',
-                      style: theme.textTheme.labelLarge?.copyWith(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    const SizedBox(width: 4),
-                    const Icon(
-                      Icons.keyboard_arrow_down,
-                      color: Colors.white54,
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 16),
-        Wrap(
-          spacing: 12,
-          runSpacing: 12,
-          children: [
-            _StatChip(
-              icon: Icons.show_chart_outlined,
-              label: usageLabel,
-              value: '$totalUsage',
-              background: Colors.white.withValues(alpha: 0.08),
-            ),
-            _StatChip(
-              icon: Icons.token,
-              label: creditsLabel,
-              value: '$credits',
-              highlight: true,
-            ),
+            const SizedBox(width: 16),
+            _EnergyPill(credits: credits),
           ],
         ),
       ],
@@ -513,69 +393,62 @@ class _HeaderBar extends StatelessWidget {
   }
 }
 
-class _StatChip extends StatelessWidget {
-  const _StatChip({
-    required this.icon,
-    required this.label,
-    required this.value,
-    this.highlight = false,
-    this.background,
-  });
+class _EnergyPill extends StatelessWidget {
+  const _EnergyPill({required this.credits});
 
-  final IconData icon;
-  final String label;
-  final String value;
-  final bool highlight;
-  final Color? background;
+  final int credits;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final accent = theme.colorScheme.primary;
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(18),
-        gradient: highlight
-            ? LinearGradient(
-                colors: [
-                  accent.withValues(alpha: 0.88),
-                  accent.withValues(alpha: 0.6),
-                ],
-              )
-            : null,
-        color: highlight
-            ? null
-            : background ?? Colors.white.withValues(alpha: 0.06),
-        border: Border.all(
-          color: highlight
-              ? accent.withValues(alpha: 0.4)
-              : Colors.white.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(22),
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Color(0xFF2857FF),
+            Color(0xFF4F46E5),
+          ],
         ),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF2857FF).withValues(alpha: 0.3),
+            blurRadius: 22,
+            offset: const Offset(0, 12),
+          ),
+        ],
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
-            icon,
-            size: 18,
-            color: highlight ? Colors.white : Colors.white70,
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: Colors.white.withValues(alpha: 0.12),
+            ),
+            child: const Icon(
+              Icons.bolt,
+              color: Colors.white,
+              size: 20,
+            ),
           ),
-          const SizedBox(width: 8),
+          const SizedBox(width: 12),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                label,
+                'common.credits'.tr(),
                 style: theme.textTheme.labelSmall?.copyWith(
-                  color: highlight
-                      ? Colors.white.withValues(alpha: 0.85)
-                      : Colors.white60,
+                  color: Colors.white70,
                 ),
               ),
               Text(
-                value,
-                style: theme.textTheme.labelLarge?.copyWith(
+                '$credits',
+                style: theme.textTheme.titleMedium?.copyWith(
                   color: Colors.white,
                   fontWeight: FontWeight.w700,
                 ),
@@ -588,81 +461,100 @@ class _StatChip extends StatelessWidget {
   }
 }
 
-class _ModeChip extends StatelessWidget {
-  const _ModeChip({
-    required this.icon,
-    required this.label,
-    required this.active,
-    required this.onTap,
-    this.badge,
+class _ModeScroller extends StatelessWidget {
+  const _ModeScroller({
+    required this.modes,
+    required this.selectedModeId,
+    required this.onModeSelected,
+    required this.titleBuilder,
+    required this.badgeBuilder,
   });
 
-  final IconData icon;
-  final String label;
-  final bool active;
-  final VoidCallback onTap;
-  final String? badge;
+  final List<HomeMode> modes;
+  final String selectedModeId;
+  final ValueChanged<HomeMode> onModeSelected;
+  final String Function(String id) titleBuilder;
+  final String? Function(String? key) badgeBuilder;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final accent = theme.colorScheme.primary;
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: 150,
-        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(20),
-          gradient: active
-              ? LinearGradient(
-                  colors: [
-                    accent.withValues(alpha: 0.75),
-                    accent.withValues(alpha: 0.55),
-                  ],
-                )
-              : null,
-          color: active ? null : Colors.white.withValues(alpha: 0.06),
-          border: Border.all(
-            color: active
-                ? accent.withValues(alpha: 0.5)
-                : Colors.white.withValues(alpha: 0.08),
-          ),
-        ),
-        child: Row(
-          children: [
-            Icon(
-              icon,
-              size: 18,
-              color: Colors.white.withValues(alpha: active ? 1 : 0.7),
-            ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+    return SizedBox(
+      height: 68,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        itemCount: modes.length,
+        separatorBuilder: (_, __) => const SizedBox(width: 12),
+        itemBuilder: (context, index) {
+          final mode = modes[index];
+          final isActive = selectedModeId == mode.id;
+          final label = titleBuilder(mode.id);
+          final badge = badgeBuilder(mode.badgeKey);
+          return GestureDetector(
+            onTap: () => onModeSelected(mode),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 220),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(22),
+                gradient: isActive
+                    ? const LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
+                          Color(0xFF2A55FF),
+                          Color(0xFF4F46E5),
+                        ],
+                      )
+                    : null,
+                color: isActive ? null : Colors.white.withValues(alpha: 0.04),
+                border: Border.all(
+                  color: isActive
+                      ? Colors.white.withValues(alpha: 0.35)
+                      : Colors.white.withValues(alpha: 0.06),
+                ),
+              ),
+              child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
+                  Icon(
+                    mode.icon,
+                    color: Colors.white,
+                    size: 20,
+                  ),
+                  const SizedBox(width: 10),
                   Text(
                     label,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
                     style: theme.textTheme.labelLarge?.copyWith(
                       color: Colors.white,
-                      fontWeight: active ? FontWeight.w700 : FontWeight.w500,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
-                  if (badge != null)
-                    Text(
-                      badge!,
-                      style: theme.textTheme.labelSmall?.copyWith(
-                        color: Colors.white.withValues(alpha: 0.85),
+                  if (badge != null) ...[
+                    const SizedBox(width: 10),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(14),
+                        color: Colors.white.withValues(alpha: 0.12),
+                      ),
+                      child: Text(
+                        badge.toUpperCase(),
+                        style: theme.textTheme.labelSmall?.copyWith(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
+                  ],
                 ],
               ),
             ),
-          ],
-        ),
+          );
+        },
       ),
     );
   }
@@ -910,6 +802,8 @@ class _CapabilityCard extends StatelessWidget {
     required this.placeholderLabel,
     required this.usageLabel,
     required this.creditsLabel,
+    required this.usageValue,
+    required this.creditsValue,
     required this.applyLabel,
     required this.onTap,
   });
@@ -919,6 +813,8 @@ class _CapabilityCard extends StatelessWidget {
   final String placeholderLabel;
   final String usageLabel;
   final String creditsLabel;
+  final String usageValue;
+  final String creditsValue;
   final String applyLabel;
   final VoidCallback onTap;
 
@@ -1010,109 +906,119 @@ class _CapabilityCard extends StatelessWidget {
               padding: const EdgeInsets.all(18),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 5,
-                    ),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(14),
-                      color: Colors.white.withValues(alpha: 0.06),
-                    ),
-                    child: Text(
-                      categoryLabel,
-                      style: theme.textTheme.labelSmall?.copyWith(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  Text(
-                    template.title,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: theme.textTheme.titleMedium?.copyWith(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    template.subtitle,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: Colors.white70,
-                    ),
-                  ),
-                  const Spacer(),
-                  Row(
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Icon(
-                        Icons.download_done_outlined,
-                        size: 16,
-                        color: Colors.white54,
-                      ),
-                      const SizedBox(width: 6),
-                      Expanded(
-                        child: Text(
-                          '${template.usageCount} $usageLabel',
-                          maxLines: 1,
-                          overflow: TextOverflow.fade,
-                          softWrap: false,
-                          style: theme.textTheme.labelSmall?.copyWith(
-                            color: Colors.white60,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
                       Container(
                         padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 6,
+                          horizontal: 10,
+                          vertical: 5,
                         ),
                         decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(16),
-                          gradient: LinearGradient(
-                            colors: [
-                              accent.withValues(alpha: 0.42),
-                              accent.withValues(alpha: 0.24),
-                            ],
-                          ),
-                          border: Border.all(
-                            color: accent.withValues(alpha: 0.5),
+                          borderRadius: BorderRadius.circular(14),
+                          color: Colors.white.withValues(alpha: 0.06),
+                        ),
+                        child: Text(
+                          categoryLabel,
+                          style: theme.textTheme.labelSmall?.copyWith(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Icon(
-                              Icons.token,
-                              size: 14,
-                              color: Colors.white,
-                            ),
-                            const SizedBox(width: 6),
-                            Text(
-                              '+${template.creditCost} $creditsLabel',
-                              style: theme.textTheme.labelSmall?.copyWith(
-                                color: Colors.white,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ],
+                      ),
+                      const SizedBox(height: 10),
+                      Text(
+                        template.title,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        template.subtitle,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: Colors.white70,
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 12),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: onTap,
-                      child: Text(applyLabel),
-                    ),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.download_done_outlined,
+                            size: 16,
+                            color: Colors.white54,
+                          ),
+                          const SizedBox(width: 6),
+                          Expanded(
+                            child: Text(
+                              '$usageValue $usageLabel',
+                              maxLines: 1,
+                              overflow: TextOverflow.fade,
+                              softWrap: false,
+                              style: theme.textTheme.labelSmall?.copyWith(
+                                color: Colors.white60,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 6,
+                            ),
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(16),
+                              gradient: LinearGradient(
+                                colors: [
+                                  accent.withValues(alpha: 0.42),
+                                  accent.withValues(alpha: 0.24),
+                                ],
+                              ),
+                              border: Border.all(
+                                color: accent.withValues(alpha: 0.5),
+                              ),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(
+                                  Icons.token,
+                                  size: 14,
+                                  color: Colors.white,
+                                ),
+                                const SizedBox(width: 6),
+                                Text(
+                                  '$creditsValue $creditsLabel',
+                                  style: theme.textTheme.labelSmall?.copyWith(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 14),
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          onPressed: onTap,
+                          child: Text(applyLabel),
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),

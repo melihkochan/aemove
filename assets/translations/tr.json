@@ -69,6 +69,8 @@
   },
   "profile": {
     "title": "Hesap",
+    "headerTitle": "Stüdyo alanın",
+    "headerSubtitle": "Planını, kredilerini ve tercihlerini yönet",
     "creditsTitle": "Kredi bakiyen",
     "nextRefresh": "Sonraki yenileme",
     "addCredits": "Kredi ekle",
@@ -98,7 +100,13 @@
     "planWeekly": "Haftalık",
     "planYearly": "Yıllık",
     "planOnetime": "Tek seferlik",
-    "badgeBest": "En İyi"
+    "badgeBest": "En İyi",
+    "languageTitle": "Dil ve bölge",
+    "languageDescription": "Aemove'un cihazlarında hangi dilde görüneceğini seç.",
+    "languageOption": {
+      "en": "İngilizce",
+      "tr": "Türkçe"
+    }
   }
 }
 

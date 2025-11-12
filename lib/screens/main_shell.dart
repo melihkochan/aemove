@@ -49,52 +49,16 @@ class _MainShellState extends State<MainShell> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     return Scaffold(
       body: IndexedStack(index: _currentIndex, children: _pages),
       bottomNavigationBar: SafeArea(
         top: false,
-        minimum: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(28),
-          child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 22, sigmaY: 22),
-            child: DecoratedBox(
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [Color(0xFF111b33), Color(0xFF0b1326)],
-                ),
-                borderRadius: BorderRadius.circular(28),
-                border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.4),
-                    blurRadius: 28,
-                    offset: const Offset(0, 20),
-                  ),
-                ],
-              ),
-              child: SizedBox(
-                height: 78,
-                child: Row(
-                  children: _items.asMap().entries.map((entry) {
-                    final index = entry.key;
-                    final item = entry.value;
-                    final isActive = index == _currentIndex;
-                    return Expanded(
-                      child: _NavButton(
-                        item: item,
-                        isActive: isActive,
-                        onTap: () => setState(() => _currentIndex = index),
-                        theme: theme,
-                      ),
-                    );
-                  }).toList(),
-                ),
-              ),
-            ),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(12, 0, 12, 16),
+          child: _FrostedNavBar(
+            items: _items,
+            currentIndex: _currentIndex,
+            onItemSelected: (index) => setState(() => _currentIndex = index),
           ),
         ),
       ),
@@ -134,7 +98,7 @@ class _NavButton extends StatelessWidget {
       onTap: onTap,
       behavior: HitTestBehavior.opaque,
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 200),
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
@@ -157,28 +121,87 @@ class _NavButton extends StatelessWidget {
                   : Colors.transparent,
             ),
           ),
-          child: Row(
+          child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Icon(
                 isActive ? item.activeIcon : item.icon,
-                color: isActive ? Colors.white : Colors.white60,
+                color: isActive ? Colors.white : Colors.white70,
+                size: 26,
               ),
-              if (isActive) ...[
-                const SizedBox(width: 8),
-                Flexible(
-                  child: Text(
-                    'nav.${item.labelKey}'.tr(),
-                    overflow: TextOverflow.fade,
-                    softWrap: false,
-                    style: theme.textTheme.labelLarge?.copyWith(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
+              const SizedBox(height: 6),
+              Text(
+                'nav.${item.labelKey}'.tr(),
+                maxLines: 1,
+                overflow: TextOverflow.fade,
+                softWrap: false,
+                style: theme.textTheme.labelMedium?.copyWith(
+                  color: isActive ? Colors.white : Colors.white60,
+                  fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
                 ),
-              ],
+              ),
             ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _FrostedNavBar extends StatelessWidget {
+  const _FrostedNavBar({
+    required this.items,
+    required this.currentIndex,
+    required this.onItemSelected,
+  });
+
+  final List<_NavItem> items;
+  final int currentIndex;
+  final ValueChanged<int> onItemSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(30),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 22, sigmaY: 22),
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Color(0xFF10192f),
+                Color(0xFF0b1324),
+              ],
+            ),
+            borderRadius: BorderRadius.circular(30),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.35),
+                blurRadius: 30,
+                offset: const Offset(0, 18),
+              ),
+            ],
+          ),
+          child: SizedBox(
+            height: 84,
+            child: Row(
+              children: items.asMap().entries.map((entry) {
+                final index = entry.key;
+                final item = entry.value;
+                return Expanded(
+                  child: _NavButton(
+                    item: item,
+                    isActive: index == currentIndex,
+                    onTap: () => onItemSelected(index),
+                    theme: theme,
+                  ),
+                );
+              }).toList(),
+            ),
           ),
         ),
       ),

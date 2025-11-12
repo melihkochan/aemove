@@ -69,6 +69,8 @@
   },
   "profile": {
     "title": "Account",
+    "headerTitle": "Creator workspace",
+    "headerSubtitle": "Manage your plan, credits and preferences",
     "creditsTitle": "Your credits",
     "nextRefresh": "Next refresh",
     "addCredits": "Add credits",
@@ -98,7 +100,13 @@
     "planWeekly": "Weekly",
     "planYearly": "Yearly",
     "planOnetime": "One-time",
-    "badgeBest": "Best"
+    "badgeBest": "Best",
+    "languageTitle": "Language & region",
+    "languageDescription": "Choose how Aemove appears across devices.",
+    "languageOption": {
+      "en": "English",
+      "tr": "Türkçe"
+    }
   }
 }
 
