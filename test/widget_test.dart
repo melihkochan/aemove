@@ -8,13 +8,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:easy_localization/easy_localization.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:aemove/main.dart';
 
 Future<void> main() async {
   TestWidgetsFlutterBinding.ensureInitialized();
-  SharedPreferences.setMockInitialValues({});
   await EasyLocalization.ensureInitialized();
 
   testWidgets('Home screen renders navigation headline', (
@@ -26,7 +24,7 @@ Future<void> main() async {
         path: 'assets/translations',
         fallbackLocale: const Locale('en'),
         startLocale: const Locale('tr'),
-        child: const AemoveApp(),
+        child: const MyApp(),
       ),
     );
 

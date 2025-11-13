@@ -1,12 +1,16 @@
+import 'dart:async';
 import 'dart:ui';
 
-import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 
 import 'create_screen.dart';
 import 'home_screen.dart';
-import 'my_videos_screen.dart';
+import 'gallery_screen.dart';
+import 'coffee_fortune_screen.dart';
 import 'profile_screen.dart';
+import '../services/auth_service.dart';
+import '../services/firestore_repository.dart';
+import '../models/user_profile.dart';
 
 class MainShell extends StatefulWidget {
   const MainShell({super.key});
@@ -16,42 +20,75 @@ class MainShell extends StatefulWidget {
 }
 
 class _MainShellState extends State<MainShell> {
+  StreamSubscription<UserProfile>? _profileSubscription;
+  UserProfile? _profile;
   int _currentIndex = 0;
-  final int _availableCredits = 24;
 
   final _pages = const [
     HomeScreen(),
+    GalleryScreen(),
     CreateScreen(),
-    MyVideosScreen(),
+    CoffeeFortuneScreen(),
     ProfileScreen(),
   ];
   final _items = const [
     _NavItem(
-      labelKey: 'home',
+      label: 'Home',
       icon: Icons.home_outlined,
       activeIcon: Icons.home_rounded,
     ),
     _NavItem(
-      labelKey: 'create',
-      icon: Icons.auto_fix_high_outlined,
-      activeIcon: Icons.auto_fix_high_rounded,
+      label: 'Gallery',
+      icon: Icons.collections_outlined,
+      activeIcon: Icons.collections,
     ),
     _NavItem(
-      labelKey: 'videos',
-      icon: Icons.play_circle_outline,
-      activeIcon: Icons.play_circle_filled_rounded,
+      label: 'Create',
+      icon: Icons.add,
+      activeIcon: Icons.add,
+      isPrimary: true,
     ),
     _NavItem(
-      labelKey: 'account',
+      label: 'Fortune',
+      icon: Icons.local_cafe_outlined,
+      activeIcon: Icons.local_cafe,
+    ),
+    _NavItem(
+      label: 'Account',
       icon: Icons.person_outline,
-      activeIcon: Icons.person_rounded,
+      activeIcon: Icons.person,
     ),
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    _hydrate();
+  }
+
+  Future<void> _hydrate() async {
+    final user = await AuthService.ensureSignedIn();
+    await _profileSubscription?.cancel();
+    _profileSubscription = FirestoreRepository.userProfileStream(user.uid)
+        .listen((profile) {
+          if (!mounted) return;
+          setState(() {
+            _profile = profile;
+          });
+        });
+  }
+
+  @override
+  void dispose() {
+    _profileSubscription?.cancel();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     final mediaQuery = MediaQuery.of(context);
     final bottomInset = mediaQuery.padding.bottom;
+    final credits = _profile?.credits ?? 0;
     return Scaffold(
       extendBody: true,
       body: Stack(
@@ -86,7 +123,8 @@ class _MainShellState extends State<MainShell> {
                       children: [
                         Text(
                           'Aemove',
-                          style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                          style: Theme.of(context).textTheme.titleLarge
+                              ?.copyWith(
                                 color: Colors.white,
                                 fontWeight: FontWeight.w800,
                                 letterSpacing: -0.4,
@@ -94,16 +132,15 @@ class _MainShellState extends State<MainShell> {
                         ),
                         Text(
                           'Create studio',
-                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                color: Colors.white60,
-                              ),
+                          style: Theme.of(context).textTheme.bodySmall
+                              ?.copyWith(color: Colors.white60),
                         ),
                       ],
                     ),
                     const Spacer(),
                     _GlobalCreditPill(
-                      credits: _availableCredits,
-                      onTap: () => setState(() => _currentIndex = 3),
+                      credits: credits,
+                      onTap: () => setState(() => _currentIndex = 4),
                       compact: true,
                     ),
                   ],
@@ -141,14 +178,16 @@ class _MainShellState extends State<MainShell> {
 
 class _NavItem {
   const _NavItem({
-    required this.labelKey,
+    required this.label,
     required this.icon,
     required this.activeIcon,
+    this.isPrimary = false,
   });
 
-  final String labelKey;
+  final String label;
   final IconData icon;
   final IconData activeIcon;
+  final bool isPrimary;
 }
 
 class _NavButton extends StatelessWidget {
@@ -168,87 +207,82 @@ class _NavButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final accent = theme.colorScheme.primary;
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(22),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
-          child: AnimatedContainer(
-            duration: _duration,
-            curve: Curves.easeOutCubic,
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(22),
-              color: isActive
-                  ? accent.withValues(alpha: 0.18)
-                  : Colors.white.withValues(alpha: 0.04),
-            ),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                AnimatedContainer(
-                  duration: _duration,
-                  curve: Curves.easeOutCubic,
-                  width: isActive ? 30 : 26,
-                  height: isActive ? 30 : 26,
+    if (item.isPrimary) {
+      return Padding(
+        padding: const EdgeInsets.only(bottom: 6),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            Material(
+              color: Colors.transparent,
+              child: InkWell(
+                onTap: onTap,
+                borderRadius: BorderRadius.circular(30),
+                child: Ink(
+                  width: 62,
+                  height: 62,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    gradient: isActive
-                        ? LinearGradient(
-                            colors: [
-                              accent,
-                              accent.withValues(alpha: 0.65),
-                            ],
-                          )
-                        : null,
-                    color: isActive
-                        ? null
-                        : Colors.white.withValues(alpha: 0.16),
-                    boxShadow: isActive
-                        ? [
-                            BoxShadow(
-                              color: accent.withValues(alpha: 0.35),
-                              blurRadius: 14,
-                              offset: const Offset(0, 8),
-                            ),
-                          ]
-                        : null,
-                  ),
-                  child: Icon(
-                    isActive ? item.activeIcon : item.icon,
-                    color: Colors.white,
-                    size: isActive ? 20 : 18,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                AnimatedDefaultTextStyle(
-                  duration: _duration,
-                  curve: Curves.easeOutCubic,
-                  style: theme.textTheme.labelMedium?.copyWith(
-                        fontSize: isActive ? 11 : 10,
-                        fontWeight:
-                            isActive ? FontWeight.w700 : FontWeight.w500,
-                        color: isActive
-                            ? Colors.white
-                            : Colors.white.withValues(alpha: 0.75),
-                        letterSpacing: 0.1,
-                      ) ??
-                      TextStyle(
-                        fontSize: isActive ? 11 : 10,
-                        fontWeight:
-                            isActive ? FontWeight.w700 : FontWeight.w500,
-                        color: isActive
-                            ? Colors.white
-                            : Colors.white.withValues(alpha: 0.75),
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF5B8CFF), Color(0xFF7F66FF)],
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFF5B8CFF).withOpacity(0.35),
+                        blurRadius: 16,
+                        offset: const Offset(0, 8),
                       ),
-                  child: Text(item.labelKey),
+                    ],
+                  ),
+                  child: const Icon(Icons.add, color: Colors.white, size: 30),
                 ),
-              ],
+              ),
             ),
-          ),
+            const SizedBox(height: 6),
+            Text(
+              item.label,
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: Colors.white,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    final iconColor = isActive ? Colors.white : Colors.white70;
+
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: _duration,
+        curve: Curves.easeOutCubic,
+        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 6),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(isActive ? item.activeIcon : item.icon, color: iconColor),
+            const SizedBox(height: 6),
+            Text(
+              item.label,
+              style: theme.textTheme.labelMedium?.copyWith(
+                color: iconColor,
+                fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
+              ),
+            ),
+            const SizedBox(height: 4),
+            AnimatedContainer(
+              duration: _duration,
+              curve: Curves.easeOutCubic,
+              height: 3,
+              width: isActive ? 20 : 0,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -282,13 +316,11 @@ class _FrostedNavBar extends StatelessWidget {
               end: Alignment.bottomCenter,
               colors: [glassStart, glassEnd],
             ),
-            border: Border.all(
-              color: Colors.white.withOpacity(0.08),
-            ),
+            border: Border.all(color: Colors.white.withOpacity(0.08)),
             borderRadius: BorderRadius.circular(24),
           ),
           child: SizedBox(
-            height: 66,
+            height: 96,
             child: Row(
               children: items.asMap().entries.map((entry) {
                 final index = entry.key;
@@ -311,7 +343,11 @@ class _FrostedNavBar extends StatelessWidget {
 }
 
 class _GlobalCreditPill extends StatelessWidget {
-  const _GlobalCreditPill({required this.credits, required this.onTap, this.compact = false});
+  const _GlobalCreditPill({
+    required this.credits,
+    required this.onTap,
+    this.compact = false,
+  });
 
   final int credits;
   final VoidCallback onTap;
@@ -351,12 +387,17 @@ class _GlobalCreditPill extends StatelessWidget {
                   shape: BoxShape.circle,
                   color: Color(0x334F8BFF),
                 ),
-                child: Icon(Icons.bolt, color: Colors.white, size: compact ? 14 : 16),
+                child: Icon(
+                  Icons.bolt,
+                  color: Colors.white,
+                  size: compact ? 14 : 16,
+                ),
               ),
               SizedBox(width: compact ? 6 : 8),
               Text(
                 '$credits',
-                style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                style:
+                    Theme.of(context).textTheme.labelLarge?.copyWith(
                       color: Colors.white,
                       fontWeight: FontWeight.w700,
                       fontSize: compact ? 13 : null,

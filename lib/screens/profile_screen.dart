@@ -1,4 +1,11 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+
+import '../models/pricing_models.dart';
+import '../models/user_profile.dart';
+import '../services/firestore_repository.dart';
+import '../services/auth_service.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -8,58 +15,72 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-  bool _weeklyReminders = true;
-  bool _videoCompleted = true;
+  StreamSubscription<UserProfile>? _profileSubscription;
+  UserProfile? _profile;
+  PricingConfig? _pricing;
+  bool _pricingError = false;
   int _selectedTab = 0;
-  int _selectedSubscriptionIndex = 1;
-  int _selectedCreditPackIndex = -1;
-  final int _availableCredits = 24;
+  String? _selectedSubscriptionId;
+  String? _selectedCreditPackId;
 
-  static const _subscriptionPlans = [
-    {
-      'credits': 5,
-      'price': '₺449,99',
-      'label': 'Starter weekly pack',
-      'frequency': 'Weekly',
-    },
-    {
-      'credits': 20,
-      'price': '₺1.299,99',
-      'label': 'Growth monthly plan',
-      'badge': 'Popular',
-      'highlight': true,
-      'frequency': 'Monthly',
-    },
-    {
-      'credits': 240,
-      'price': '₺2.999,99',
-      'label': 'Studio annual plan',
-      'frequency': 'Annual',
-    },
-  ];
+  @override
+  void initState() {
+    super.initState();
+    _initialize();
+  }
 
-  static const _creditPackPlans = [
-    {
-      'credits': 5,
-      'price': '₺599,99',
-      'label': '5 credit add-on',
-      'frequency': 'One-time',
-    },
-    {
-      'credits': 10,
-      'price': '₺999,99',
-      'label': '10 credit add-on',
-      'frequency': 'One-time',
-    },
-    {
-      'credits': 20,
-      'price': '₺2.299,99',
-      'label': '20 credit add-on',
-      'badge': 'Best value',
-      'highlight': true,
-      'frequency': 'One-time',
-    },
-  ];
+  Future<void> _initialize() async {
+    final user = await AuthService.ensureSignedIn();
+    _profileSubscription = FirestoreRepository.userProfileStream(user.uid)
+        .listen((profile) {
+          if (!mounted) return;
+          setState(() {
+            _profile = profile;
+            if (profile.subscriptionProductId != null) {
+              _selectedSubscriptionId = profile.subscriptionProductId;
+            } else {
+              _applyDefaultSelections();
+            }
+          });
+        });
+
+    await _loadPricing();
+  }
+
+  Future<void> _loadPricing() async {
+    try {
+      final pricing = await FirestoreRepository.loadPricingConfig();
+      if (!mounted) return;
+      setState(() {
+        _pricing = pricing;
+        _applyDefaultSelections();
+      });
+    } catch (error) {
+      if (!mounted) return;
+      setState(() {
+        _pricingError = true;
+      });
+    }
+  }
+
+  void _applyDefaultSelections() {
+    final pricing = _pricing;
+    if (pricing == null) return;
+
+    _selectedSubscriptionId ??= pricing.subscriptions.isNotEmpty
+        ? pricing.subscriptions.first.id
+        : null;
+
+    _selectedCreditPackId ??= pricing.creditPacks.isNotEmpty
+        ? pricing.creditPacks.first.id
+        : null;
+  }
+
+  @override
+  void dispose() {
+    _profileSubscription?.cancel();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -67,15 +88,248 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final accent = const Color(0xFF4F8BFF);
     final backgroundDark = const Color(0xFF040814);
     final backgroundDeep = const Color(0xFF071029);
-    final plans = _selectedTab == 0 ? _subscriptionPlans : _creditPackPlans;
-    final selectedPlanIndex =
-        _selectedTab == 0 ? _selectedSubscriptionIndex : _selectedCreditPackIndex;
+    final profile = _profile;
+    final pricing = _pricing;
+
+    Widget content;
+
+    if (profile == null || pricing == null) {
+      content = Center(
+        child: _pricingError
+            ? Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.cloud_off, color: accent, size: 48),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Veriler yüklenemedi',
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Lütfen bağlantınızı kontrol edip yeniden deneyin.',
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: Colors.white70,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 20),
+                  FilledButton(
+                    onPressed: () {
+                      setState(() {
+                        _pricingError = false;
+                        _pricing = null;
+                      });
+                      _loadPricing();
+                    },
+                    style: FilledButton.styleFrom(backgroundColor: accent),
+                    child: const Text('Yeniden dene'),
+                  ),
+                ],
+              )
+            : const CircularProgressIndicator(),
+      );
+    } else {
+      final plans = _selectedTab == 0
+          ? pricing.subscriptions
+          : pricing.creditPacks;
+      final selectedPlanId = _selectedTab == 0
+          ? _selectedSubscriptionId
+          : _selectedCreditPackId;
+      final selectedPlanIndex = plans.indexWhere(
+        (plan) => plan.id == selectedPlanId,
+      );
+
+      content = ListView(
+        padding: const EdgeInsets.fromLTRB(20, 12, 20, 140),
+        children: [
+          _ProfileHeader(credits: profile.credits, accent: accent),
+          const SizedBox(height: 20),
+          _PlanSegmentedControl(
+            selectedIndex: _selectedTab,
+            onChanged: (value) {
+              setState(() {
+                _selectedTab = value;
+                if (value == 1 &&
+                    _selectedCreditPackId == null &&
+                    pricing.creditPacks.isNotEmpty) {
+                  _selectedCreditPackId = pricing.creditPacks.first.id;
+                }
+                if (value == 0 &&
+                    _selectedSubscriptionId == null &&
+                    pricing.subscriptions.isNotEmpty) {
+                  _selectedSubscriptionId = pricing.subscriptions.first.id;
+                }
+              });
+            },
+            accent: accent,
+          ),
+          const SizedBox(height: 16),
+          _PlanInfoSection(isSubscription: _selectedTab == 0, accent: accent),
+          const SizedBox(height: 16),
+          GridView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: plans.length,
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 3,
+              mainAxisSpacing: 18,
+              crossAxisSpacing: 18,
+              childAspectRatio: 0.62,
+            ),
+            itemBuilder: (context, index) {
+              final plan = plans[index];
+              final badgeLabel = plan.badge != null
+                  ? (plan.highlight ? 'BEST' : plan.badge!.toUpperCase())
+                  : null;
+
+              return _SelectablePlanCard(
+                highlighted: plan.highlight,
+                accent: accent,
+                badge: badgeLabel,
+                isDisabled: false,
+                isSelected: index == selectedPlanIndex,
+                onTap: () {
+                  setState(() {
+                    if (_selectedTab == 0) {
+                      _selectedSubscriptionId = plan.id;
+                    } else {
+                      _selectedCreditPackId = plan.id;
+                    }
+                  });
+                },
+                child: _CreditPlanCard(
+                  width: 126,
+                  credits: plan.credits,
+                  price: plan.price,
+                  frequency: plan.frequency,
+                  highlight: plan.highlight,
+                  accent: accent,
+                ),
+              );
+            },
+          ),
+          const SizedBox(height: 12),
+          Text(
+            _selectedTab == 0
+                ? 'Choose a subscription to refill credits automatically every month.'
+                : 'Credit packs are one-time top-ups you can use whenever you need.',
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: Colors.white70,
+              height: 1.4,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 32),
+          OutlinedButton.icon(
+            onPressed: () {},
+            icon: Icon(Icons.refresh_outlined, color: accent),
+            label: Text('Restore purchases', style: TextStyle(color: accent)),
+            style: OutlinedButton.styleFrom(
+              side: BorderSide(color: accent.withValues(alpha: 0.6)),
+              padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 14),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(18),
+              ),
+            ),
+          ),
+          const SizedBox(height: 24),
+          _QuickActionTile(
+            icon: Icons.star,
+            title: 'Rate the app',
+            subtitle: 'Leave a review to support updates.',
+            onTap: () {},
+            accent: accent,
+          ),
+          _QuickActionTile(
+            icon: Icons.chat_bubble_outline,
+            title: 'Feature requests',
+            subtitle: 'Tell us what you want to see next.',
+            onTap: () {},
+            accent: accent,
+          ),
+          _QuickActionTile(
+            icon: Icons.help_outline,
+            title: 'Help center',
+            subtitle: 'Get answers to common questions.',
+            onTap: () {},
+            accent: accent,
+          ),
+          const SizedBox(height: 24),
+          Text(
+            'Notification preferences',
+            style: theme.textTheme.titleMedium?.copyWith(
+              color: Colors.white,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: 12),
+          _ToggleTile(
+            icon: Icons.calendar_today_outlined,
+            title: 'Weekly reminder emails',
+            subtitle: 'Get a weekly summary of your projects and new features.',
+            value: profile.weeklyReminders,
+            onChanged: (value) {
+              setState(() {
+                _profile = _profile?.copyWith(weeklyReminders: value);
+              });
+              FirestoreRepository.updateUserSetting(
+                profile.uid,
+                'weeklyReminders',
+                value,
+              );
+            },
+            accent: accent,
+          ),
+          _ToggleTile(
+            icon: Icons.play_circle_outline,
+            title: 'Video tips',
+            subtitle: 'Show short tips before rendering new videos.',
+            value: profile.videoCompleted,
+            onChanged: (value) {
+              setState(() {
+                _profile = _profile?.copyWith(videoCompleted: value);
+              });
+              FirestoreRepository.updateUserSetting(
+                profile.uid,
+                'videoCompleted',
+                value,
+              );
+            },
+            accent: accent,
+          ),
+          const SizedBox(height: 32),
+          Text(
+            'Need help?',
+            style: theme.textTheme.titleMedium?.copyWith(
+              color: Colors.white,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: 12),
+          _QuickActionTile(
+            icon: Icons.email_outlined,
+            title: 'Contact support',
+            subtitle: 'Reach our team for direct assistance.',
+            onTap: () {},
+            accent: accent,
+          ),
+          _QuickActionTile(
+            icon: Icons.article_outlined,
+            title: 'Knowledge base',
+            subtitle: 'Browse tutorials and best practices.',
+            onTap: () {},
+            accent: accent,
+          ),
+        ],
+      );
+    }
 
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-      ),
+      appBar: AppBar(backgroundColor: Colors.transparent, elevation: 0),
       extendBodyBehindAppBar: true,
       body: Container(
         decoration: BoxDecoration(
@@ -85,150 +339,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             colors: [backgroundDark, backgroundDeep],
           ),
         ),
-        child: SafeArea(
-          child: ListView(
-            padding: const EdgeInsets.fromLTRB(20, 12, 20, 140),
-            children: [
-              _ProfileHeader(credits: _availableCredits, accent: accent),
-              const SizedBox(height: 20),
-              _PlanSegmentedControl(
-                selectedIndex: _selectedTab,
-                onChanged: (value) {
-                  setState(() {
-                    _selectedTab = value;
-                    if (value == 1) {
-                      _selectedCreditPackIndex = -1;
-                    }
-                  });
-                },
-                accent: accent,
-              ),
-              const SizedBox(height: 16),
-              _PlanInfoSection(isSubscription: _selectedTab == 0, accent: accent),
-              const SizedBox(height: 16),
-              GridView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: plans.length,
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 3,
-                  mainAxisSpacing: 18,
-                  crossAxisSpacing: 18,
-                  childAspectRatio: 0.62,
-                ),
-                itemBuilder: (context, index) {
-                  final plan = plans[index];
-                  final credits = plan['credits'] as int;
-                  final price = plan['price'] as String;
-                  final frequency = plan['frequency'] as String?;
-                  final badge = plan['badge'] as String?;
-                  final highlight = plan['highlight'] == true;
-                  final badgeLabel = badge != null
-                      ? (highlight ? 'BEST' : badge!.toUpperCase())
-                      : null;
-          return _SelectablePlanCard(
-            highlighted: highlight,
-            accent: accent,
-            badge: badgeLabel,
-            isDisabled: _selectedTab == 1 && index == _selectedSubscriptionIndex,
-            isSelected: index == selectedPlanIndex,
-            onTap: () {
-              setState(() {
-                if (_selectedTab == 0) {
-                  _selectedSubscriptionIndex = index;
-                } else {
-                  _selectedCreditPackIndex = index;
-                }
-              });
-            },
-            child: _CreditPlanCard(
-              width: 126,
-              credits: credits,
-              price: price,
-              frequency: frequency,
-              highlight: highlight,
-              accent: accent,
-            ),
-          );
-                },
-              ),
-              const SizedBox(height: 12),
-              Text(
-                _selectedTab == 0
-                    ? 'Choose a subscription to refill credits automatically every month.'
-                    : 'Credit packs are one-time top-ups you can use whenever you need.',
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: Colors.white70,
-                  height: 1.4,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 32),
-              OutlinedButton.icon(
-                onPressed: () {},
-                icon: Icon(
-                  Icons.refresh_outlined,
-                  color: accent,
-                ),
-                label: Text(
-                  'Restore purchases',
-                  style: TextStyle(color: accent),
-                ),
-                style: OutlinedButton.styleFrom(
-                  side: BorderSide(color: accent.withValues(alpha: 0.6)),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 22,
-                    vertical: 14,
-                  ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(18),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 24),
-              _QuickActionTile(
-                icon: Icons.star,
-                title: 'Rate the app',
-                subtitle: 'Leave a review to support updates.',
-                onTap: () {},
-                accent: accent,
-              ),
-              _QuickActionTile(
-                icon: Icons.chat_bubble_outline,
-                title: 'Feature requests',
-                subtitle: 'Tell us what you want to see next.',
-                onTap: () {},
-                accent: accent,
-              ),
-              _ToggleTile(
-                icon: Icons.calendar_today_outlined,
-                title: 'Weekly reminders',
-                subtitle: 'Receive tips and best practices.',
-                value: _weeklyReminders,
-                onChanged: (value) => setState(() => _weeklyReminders = value),
-                accent: accent,
-              ),
-              _ToggleTile(
-                icon: Icons.check_circle_outline,
-                title: 'Video completed alerts',
-                subtitle: 'Get notified when renders finish.',
-                value: _videoCompleted,
-                onChanged: (value) => setState(() => _videoCompleted = value),
-                accent: accent,
-              ),
-              _QuickActionTile(
-                icon: Icons.mail_outline,
-                title: 'Contact support',
-                subtitle: 'Reach out for technical help.',
-                onTap: () {},
-                accent: accent,
-              ),
-              const SizedBox(height: 24),
-              _FooterLinks(accent: accent),
-              const SizedBox(height: 12),
-            ],
-          ),
-        ),
+        child: SafeArea(child: content),
       ),
     );
   }
@@ -278,7 +389,11 @@ class _ProfileHeader extends StatelessWidget {
                     end: Alignment.bottomRight,
                   ),
                 ),
-                child: const Icon(Icons.bolt_rounded, color: Colors.white, size: 24),
+                child: const Icon(
+                  Icons.bolt_rounded,
+                  color: Colors.white,
+                  size: 24,
+                ),
               ),
               const SizedBox(width: 18),
               Column(
@@ -322,11 +437,7 @@ class _ProfileHeader extends StatelessWidget {
                     borderRadius: BorderRadius.circular(14),
                     color: Colors.white.withOpacity(0.08),
                   ),
-                  child: Icon(
-                    Icons.auto_awesome,
-                    color: accent,
-                    size: 22,
-                  ),
+                  child: Icon(Icons.auto_awesome, color: accent, size: 22),
                 ),
                 const SizedBox(width: 16),
                 Expanded(
@@ -351,8 +462,10 @@ class _ProfileHeader extends StatelessWidget {
                   ),
                 ),
                 Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 8,
+                  ),
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(18),
                     color: accent.withOpacity(0.18),
@@ -400,8 +513,11 @@ class _InfoStatRow extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    Icon(Icons.schedule_rounded,
-                        color: accent.withOpacity(0.8), size: 18),
+                    Icon(
+                      Icons.schedule_rounded,
+                      color: accent.withOpacity(0.8),
+                      size: 18,
+                    ),
                     const SizedBox(width: 8),
                     Text(
                       'Next weekly refresh',
@@ -437,8 +553,11 @@ class _InfoStatRow extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    Icon(Icons.credit_card_rounded,
-                        color: accent.withOpacity(0.8), size: 18),
+                    Icon(
+                      Icons.credit_card_rounded,
+                      color: accent.withOpacity(0.8),
+                      size: 18,
+                    ),
                     const SizedBox(width: 8),
                     Text(
                       'Average spend',
@@ -484,9 +603,9 @@ class _PlanPill extends StatelessWidget {
       child: Text(
         label,
         style: Theme.of(context).textTheme.labelLarge?.copyWith(
-              color: Colors.white,
-              fontWeight: active ? FontWeight.w700 : FontWeight.w500,
-            ),
+          color: Colors.white,
+          fontWeight: active ? FontWeight.w700 : FontWeight.w500,
+        ),
       ),
     );
   }
@@ -514,7 +633,9 @@ class _PlanInfoSection extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final benefits = isSubscription ? _subscriptionBenefits : _creditBenefits;
-    final title = isSubscription ? 'Subscription benefits' : 'Credit pack benefits';
+    final title = isSubscription
+        ? 'Subscription benefits'
+        : 'Credit pack benefits';
 
     return Container(
       padding: const EdgeInsets.all(20),
@@ -543,7 +664,9 @@ class _PlanInfoSection extends StatelessWidget {
                   color: accent.withOpacity(0.18),
                 ),
                 child: Icon(
-                  isSubscription ? Icons.loop_rounded : Icons.offline_bolt_outlined,
+                  isSubscription
+                      ? Icons.loop_rounded
+                      : Icons.offline_bolt_outlined,
                   color: Colors.white,
                 ),
               ),
@@ -567,10 +690,7 @@ class _PlanInfoSection extends StatelessWidget {
             runSpacing: 12,
             children: benefits
                 .map(
-                  (benefit) => _BenefitChip(
-                    icon: benefit.$1,
-                    text: benefit.$2,
-                  ),
+                  (benefit) => _BenefitChip(icon: benefit.$1, text: benefit.$2),
                 )
                 .toList(),
           ),
@@ -674,8 +794,8 @@ class _SelectablePlanCard extends StatelessWidget {
     final borderColor = isSelected
         ? accent.withOpacity(0.85)
         : highlighted
-            ? accent.withOpacity(0.6)
-            : Colors.white.withOpacity(0.07);
+        ? accent.withOpacity(0.6)
+        : Colors.white.withOpacity(0.07);
     return GestureDetector(
       onTap: isDisabled ? null : onTap,
       child: Stack(
@@ -684,7 +804,9 @@ class _SelectablePlanCard extends StatelessWidget {
         children: [
           AnimatedContainer(
             duration: const Duration(milliseconds: 200),
-            margin: badge != null ? const EdgeInsets.only(top: 16) : EdgeInsets.zero,
+            margin: badge != null
+                ? const EdgeInsets.only(top: 16)
+                : EdgeInsets.zero,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(24),
               border: Border.all(
@@ -715,22 +837,28 @@ class _SelectablePlanCard extends StatelessWidget {
             Positioned(
               top: -12,
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 6,
+                ),
                 decoration: BoxDecoration(
-                  color: highlighted ? Colors.white : Colors.black.withOpacity(0.85),
+                  color: highlighted
+                      ? Colors.white
+                      : Colors.black.withOpacity(0.85),
                   borderRadius: BorderRadius.circular(14),
                   border: Border.all(
-                    color:
-                        highlighted ? accent.withOpacity(0.75) : Colors.transparent,
+                    color: highlighted
+                        ? accent.withOpacity(0.75)
+                        : Colors.transparent,
                   ),
                 ),
                 child: Text(
                   badge!,
                   style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                        color: highlighted ? accent : Colors.white,
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: 0.5,
-                      ),
+                    color: highlighted ? accent : Colors.white,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 0.5,
+                  ),
                 ),
               ),
             ),
