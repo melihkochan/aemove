@@ -185,7 +185,6 @@ class _HomeScreenState extends State<HomeScreen> {
                   SliverPersistentHeader(
                     pinned: true,
                     delegate: _HomePinnedHeaderDelegate(
-                      subtitle: _homeTr('subtitle'),
                       categories: videoCategories,
                       selectedId: _selectedCategoryId,
                       onSelected: _handleCategorySelect,
@@ -1047,13 +1046,11 @@ class _TrendCard extends StatelessWidget {
 
 class _HomePinnedHeaderDelegate extends SliverPersistentHeaderDelegate {
   const _HomePinnedHeaderDelegate({
-    required this.subtitle,
     required this.categories,
     required this.selectedId,
     required this.onSelected,
   });
 
-  final String subtitle;
   final List<VideoCategory> categories;
   final String selectedId;
   final ValueChanged<String> onSelected;
@@ -1066,53 +1063,40 @@ class _HomePinnedHeaderDelegate extends SliverPersistentHeaderDelegate {
 
   @override
   Widget build(
-    BuildContext context,
-    double shrinkOffset,
-    bool overlapsContent,
-  ) {
-    final showShadow = overlapsContent || shrinkOffset > 1;
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [Color(0xFF161616), Color(0xFF131313)],
+      BuildContext context, double shrinkOffset, bool overlapsContent) {
+    final theme = Theme.of(context);
+    return Container(
+      decoration: const BoxDecoration(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.only(
+          bottomLeft: Radius.circular(24),
+          bottomRight: Radius.circular(24),
         ),
-        border: Border(
-          bottom: BorderSide(color: Colors.white.withOpacity(0.05)),
-        ),
-        boxShadow: showShadow
-            ? [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.28),
-                  blurRadius: 18,
-                  offset: const Offset(0, 10),
-                ),
-              ]
-            : null,
       ),
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(20, 14, 20, 0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _HomeHero(subtitle: subtitle),
-            const SizedBox(height: 20),
-            _CategoryTabStrip(
-              categories: categories,
-              selectedId: selectedId,
-              onSelected: onSelected,
-            ),
-          ],
-        ),
+      padding: const EdgeInsets.fromLTRB(20, 10, 20, 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const SizedBox(height: 6),
+          _CategoryTabStrip(
+            categories: categories,
+            selectedId: selectedId,
+            onSelected: onSelected,
+          ),
+          const SizedBox(height: 8),
+          Container(
+            height: 1,
+            margin: const EdgeInsets.only(top: 8),
+            color: Colors.white.withOpacity(0.08),
+          ),
+        ],
       ),
     );
   }
 
   @override
   bool shouldRebuild(covariant _HomePinnedHeaderDelegate oldDelegate) {
-    return oldDelegate.subtitle != subtitle ||
-        oldDelegate.selectedId != selectedId ||
+    return oldDelegate.selectedId != selectedId ||
         oldDelegate.categories != categories;
   }
 }

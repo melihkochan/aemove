@@ -75,13 +75,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        title: Text(
-          'Account',
-          style: theme.textTheme.titleLarge?.copyWith(
-            fontWeight: FontWeight.w700,
-            letterSpacing: -0.2,
-          ),
-        ),
       ),
       extendBodyBehindAppBar: true,
       body: Container(
@@ -94,7 +87,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ),
         child: SafeArea(
           child: ListView(
-            padding: const EdgeInsets.fromLTRB(20, 24, 20, 140),
+            padding: const EdgeInsets.fromLTRB(20, 12, 20, 140),
             children: [
               _ProfileHeader(credits: _availableCredits, accent: accent),
               const SizedBox(height: 20),

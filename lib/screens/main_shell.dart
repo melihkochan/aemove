@@ -57,18 +57,46 @@ class _MainShellState extends State<MainShell> {
       body: Stack(
         children: [
           Positioned.fill(
-            child: IndexedStack(index: _currentIndex, children: _pages),
+            child: Padding(
+              padding: const EdgeInsets.only(top: 52),
+              child: IndexedStack(index: _currentIndex, children: _pages),
+            ),
           ),
           Positioned(
             top: 0,
+            left: 0,
             right: 0,
             child: SafeArea(
               bottom: false,
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(0, 8, 16, 0),
-                child: _GlobalCreditPill(
-                  credits: _availableCredits,
-                  onTap: () => setState(() => _currentIndex = 3),
+                padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
+                child: Row(
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Aemove',
+                          style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w800,
+                                letterSpacing: -0.4,
+                              ),
+                        ),
+                        Text(
+                          'Create studio',
+                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                color: Colors.white60,
+                              ),
+                        ),
+                      ],
+                    ),
+                    const Spacer(),
+                    _GlobalCreditPill(
+                      credits: _availableCredits,
+                      onTap: () => setState(() => _currentIndex = 3),
+                    ),
+                  ],
                 ),
               ),
             ),
@@ -283,21 +311,18 @@ class _GlobalCreditPill extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     return Material(
       color: Colors.transparent,
-      borderRadius: BorderRadius.circular(20),
+      borderRadius: BorderRadius.circular(18),
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(18),
         child: Ink(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(20),
-            color: const Color(0xFF2B4CFF),
-            border: Border.all(
-              color: Colors.white.withOpacity(0.12),
-            ),
+            borderRadius: BorderRadius.circular(18),
+            color: const Color(0xFF4F8BFF),
+            border: Border.all(color: Colors.white.withOpacity(0.12)),
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withOpacity(0.18),
@@ -310,25 +335,23 @@ class _GlobalCreditPill extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               Container(
-                padding: const EdgeInsets.all(5),
+                padding: const EdgeInsets.all(6),
                 decoration: const BoxDecoration(
                   shape: BoxShape.circle,
-                  color: Color(0x332B4CFF),
+                  color: Color(0x334F8BFF),
                 ),
                 child: const Icon(Icons.bolt, color: Colors.white, size: 16),
               ),
               const SizedBox(width: 8),
               Text(
                 '$credits',
-                style: theme.textTheme.titleMedium?.copyWith(
+                style: Theme.of(context).textTheme.labelLarge?.copyWith(
                       color: Colors.white,
-                      fontWeight: FontWeight.w600,
-                      fontSize: 15,
+                      fontWeight: FontWeight.w700,
                     ) ??
                     const TextStyle(
                       color: Colors.white,
-                      fontWeight: FontWeight.w600,
-                      fontSize: 15,
+                      fontWeight: FontWeight.w700,
                     ),
               ),
             ],
