@@ -318,7 +318,7 @@ class _GlobalCreditPill extends StatelessWidget {
               ),
               const SizedBox(width: 10),
               Text(
-                '$credits kredi',
+                '$credits',
                 style: theme.textTheme.titleMedium?.copyWith(
                       color: Colors.white,
                       fontWeight: FontWeight.w700,
@@ -326,7 +326,7 @@ class _GlobalCreditPill extends StatelessWidget {
                     const TextStyle(
                       color: Colors.white,
                       fontWeight: FontWeight.w700,
-                      fontSize: 14,
+                      fontSize: 16,
                     ),
               ),
             ],

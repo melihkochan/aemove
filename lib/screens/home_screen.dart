@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math';
 import 'dart:collection';
 
 import 'package:easy_localization/easy_localization.dart';
@@ -162,180 +163,189 @@ class _HomeScreenState extends State<HomeScreen> {
     final bool isAll = _selectedCategoryId == 'all';
     final feedItems = _currentFeedItems;
     return Scaffold(
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Color(0xFF060d1f), Color(0xFF0c1533)],
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-          ),
-        ),
-        child: SafeArea(
-          child: CustomScrollView(
-            controller: _scrollController,
-            slivers: [
-              SliverPersistentHeader(
-                pinned: true,
-                delegate: _HomePinnedHeaderDelegate(
-                  subtitle: _homeTr('subtitle'),
-                  categories: videoCategories,
-                  selectedId: _selectedCategoryId,
-                  onSelected: _handleCategorySelect,
+      body: Stack(
+        children: [
+          const Positioned.fill(
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [Color(0xFF131313), Color(0xFF0C0D11)],
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
                 ),
               ),
-              if (isAll)
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Platform genelinde öne çıkan içerikler',
-                          style: theme.textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.w700,
-                            color: Colors.white,
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        SizedBox(
-                          height: 240,
-                          child: _QuickActionCarousel(
-                            controller: _quickActionController,
-                            actions: homeQuickActions,
-                            statusLabel: quickActionStatus,
-                            actionLabel: quickActionCTA,
-                            onTap: _handleQuickAction,
-                            onInteraction: _startQuickActionTicker,
-                          ),
-                        ),
-                        const SizedBox(height: 24),
-                        _SectionHeader(
-                          title: 'Trend keşifleri',
-                          subtitle: 'Sık denenen sahne ve modeller',
-                        ),
-                        const SizedBox(height: 14),
-                        SizedBox(
-                          height: 210,
-                          child: ListView.separated(
-                            scrollDirection: Axis.horizontal,
-                            itemCount: homeTrends.length,
-                            separatorBuilder: (_, __) =>
-                                const SizedBox(width: 16),
-                            itemBuilder: (context, index) {
-                              final trend = homeTrends[index];
-                              return _TrendCard(
-                                trend: trend,
-                                onTap: () => _handleTrend(trend),
-                              );
-                            },
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              if (isAll)
-                SliverToBoxAdapter(
-                  key: _categorySectionKey,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const SizedBox(height: 28),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 20),
-                        child: _SectionHeader(
-                          title: 'Hızlı kategoriler',
-                          subtitle:
-                              'Favori tarzını seç, üstteki akış anında yenilensin',
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 12),
-                        child: _CategoryShowcaseGrid(
-                          categories: videoCategories
-                              .where((category) => category.id != 'all')
-                              .toList(),
-                          selectedId: _selectedCategoryId,
-                          onSelected: _handleCategorySelect,
-                        ),
-                      ),
-                    ],
-                  ),
-                )
-              else
-                SliverToBoxAdapter(
-                  key: _categorySectionKey,
-                  child: const SizedBox(height: 20),
-                ),
-              if (!isAll)
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
-                    child: Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 6,
-                          ),
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(14),
-                            color: Colors.white.withValues(alpha: 0.1),
-                          ),
-                          child: Text(
-                            _categoryTitle(_selectedCategoryId),
-                            style: Theme.of(context)
-                                .textTheme
-                                .labelMedium
-                                ?.copyWith(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Text(
-                          'Seçilen kategori için önerilen içerikler',
-                          style: Theme.of(context)
-                              .textTheme
-                              .labelMedium
-                              ?.copyWith(color: Colors.white70),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              if (feedItems.isNotEmpty && !isAll)
-                SliverPadding(
-                  padding: const EdgeInsets.fromLTRB(20, 14, 20, 0),
-                  sliver: SliverGrid(
-                    gridDelegate:
-                        const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 2,
-                      mainAxisSpacing: 18,
-                      crossAxisSpacing: 18,
-                      childAspectRatio: 0.72,
-                    ),
-                    delegate: SliverChildBuilderDelegate(
-                      (context, index) {
-                        final item = feedItems[index];
-                        return _FeedCard(
-                          item: item,
-                          onTap: () => _handleFeedTap(item),
-                        );
-                      },
-                      childCount: feedItems.length,
-                    ),
-                  ),
-                ),
-              SliverToBoxAdapter(
-                child: SizedBox(height: 110 + mediaQuery.padding.bottom),
-              ),
-            ],
+            ),
           ),
-        ),
+          const Positioned.fill(child: _GrainOverlay()),
+          Positioned.fill(
+            child: SafeArea(
+              child: CustomScrollView(
+                controller: _scrollController,
+                slivers: [
+                  SliverPersistentHeader(
+                    pinned: true,
+                    delegate: _HomePinnedHeaderDelegate(
+                      subtitle: _homeTr('subtitle'),
+                      categories: videoCategories,
+                      selectedId: _selectedCategoryId,
+                      onSelected: _handleCategorySelect,
+                    ),
+                  ),
+                  if (isAll)
+                    SliverToBoxAdapter(
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Platform genelinde öne çıkan içerikler',
+                              style: theme.textTheme.titleMedium?.copyWith(
+                                fontWeight: FontWeight.w700,
+                                color: Colors.white,
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            SizedBox(
+                              height: 240,
+                              child: _QuickActionCarousel(
+                                controller: _quickActionController,
+                                actions: homeQuickActions,
+                                statusLabel: quickActionStatus,
+                                actionLabel: quickActionCTA,
+                                onTap: _handleQuickAction,
+                                onInteraction: _startQuickActionTicker,
+                              ),
+                            ),
+                            const SizedBox(height: 24),
+                            _SectionHeader(
+                              title: 'Trend keşifleri',
+                              subtitle: 'Sık denenen sahne ve modeller',
+                            ),
+                            const SizedBox(height: 14),
+                            SizedBox(
+                              height: 210,
+                              child: ListView.separated(
+                                scrollDirection: Axis.horizontal,
+                                itemCount: homeTrends.length,
+                                separatorBuilder: (_, __) =>
+                                    const SizedBox(width: 16),
+                                itemBuilder: (context, index) {
+                                  final trend = homeTrends[index];
+                                  return _TrendCard(
+                                    trend: trend,
+                                    onTap: () => _handleTrend(trend),
+                                  );
+                                },
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  if (isAll)
+                    SliverToBoxAdapter(
+                      key: _categorySectionKey,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const SizedBox(height: 28),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 20),
+                            child: _SectionHeader(
+                              title: 'Hızlı kategoriler',
+                              subtitle:
+                                  'Favori tarzını seç, üstteki akış anında yenilensin',
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 12),
+                            child: _CategoryShowcaseGrid(
+                              categories: videoCategories
+                                  .where((category) => category.id != 'all')
+                                  .toList(),
+                              selectedId: _selectedCategoryId,
+                              onSelected: _handleCategorySelect,
+                            ),
+                          ),
+                        ],
+                      ),
+                    )
+                  else
+                    SliverToBoxAdapter(
+                      key: _categorySectionKey,
+                      child: const SizedBox(height: 20),
+                    ),
+                  if (!isAll)
+                    SliverToBoxAdapter(
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+                        child: Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 6,
+                              ),
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(14),
+                                color: Colors.white.withValues(alpha: 0.1),
+                              ),
+                              child: Text(
+                                _categoryTitle(_selectedCategoryId),
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .labelMedium
+                                    ?.copyWith(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Text(
+                              'Seçilen kategori için önerilen içerikler',
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .labelMedium
+                                  ?.copyWith(color: Colors.white70),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  if (feedItems.isNotEmpty && !isAll)
+                    SliverPadding(
+                      padding: const EdgeInsets.fromLTRB(20, 14, 20, 0),
+                      sliver: SliverGrid(
+                        gridDelegate:
+                            const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 2,
+                          mainAxisSpacing: 18,
+                          crossAxisSpacing: 18,
+                          childAspectRatio: 0.72,
+                        ),
+                        delegate: SliverChildBuilderDelegate(
+                          (context, index) {
+                            final item = feedItems[index];
+                            return _FeedCard(
+                              item: item,
+                              onTap: () => _handleFeedTap(item),
+                            );
+                          },
+                          childCount: feedItems.length,
+                        ),
+                      ),
+                    ),
+                  SliverToBoxAdapter(
+                    child: SizedBox(height: 110 + mediaQuery.padding.bottom),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -361,7 +371,7 @@ class _HomeHero extends StatelessWidget {
             letterSpacing: -0.2,
           ),
         ),
-        const SizedBox(height: 4),
+        const SizedBox(height: 2),
         Text(
           subtitle,
           style: theme.textTheme.bodySmall?.copyWith(
@@ -392,35 +402,84 @@ class _CategoryTabStrip extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         SizedBox(
-          height: 40,
-          child: ListView.separated(
-            scrollDirection: Axis.horizontal,
-            itemCount: categories.length,
-            padding: const EdgeInsets.symmetric(horizontal: 12),
-            separatorBuilder: (_, __) => const SizedBox(width: 14),
-            itemBuilder: (context, index) {
-              final category = categories[index];
-              final isActive = category.id == selectedId;
-              return GestureDetector(
-                onTap: () => onSelected(category.id),
-                child: Text(
-                  category.title,
-                  style: theme.textTheme.labelLarge?.copyWith(
-                    fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
-                    color: isActive
-                        ? Colors.white
-                        : Colors.white.withValues(alpha: 0.65),
-                  ),
+          height: 38,
+          child: Stack(
+            alignment: Alignment.bottomCenter,
+            clipBehavior: Clip.none,
+            children: [
+              ListView.separated(
+                scrollDirection: Axis.horizontal,
+                itemCount: categories.length,
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                separatorBuilder: (_, __) => const SizedBox(width: 18),
+                itemBuilder: (context, index) {
+                  final category = categories[index];
+                  final isActive = category.id == selectedId;
+                  return GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    onTap: () => onSelected(category.id),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        AnimatedDefaultTextStyle(
+                          duration: const Duration(milliseconds: 220),
+                          curve: Curves.easeOutCubic,
+                          style: theme.textTheme.labelLarge?.copyWith(
+                                fontWeight: isActive
+                                    ? FontWeight.w700
+                                    : FontWeight.w500,
+                                color: isActive
+                                    ? Colors.white
+                                    : Colors.white.withOpacity(0.62),
+                                letterSpacing: 0.2,
+                              ) ??
+                              TextStyle(
+                                fontWeight: isActive
+                                    ? FontWeight.w700
+                                    : FontWeight.w500,
+                                color: isActive
+                                    ? Colors.white
+                                    : Colors.white.withOpacity(0.62),
+                                fontSize: 13,
+                              ),
+                          child: Text(category.title),
+                        ),
+                        const SizedBox(height: 5),
+                        AnimatedContainer(
+                          duration: const Duration(milliseconds: 220),
+                          curve: Curves.easeOutCubic,
+                          height: 3,
+                          width: isActive ? 28 : 0,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(12),
+                            gradient: isActive
+                                ? const LinearGradient(
+                                    colors: [
+                                      Color(0xFF4D9FFF),
+                                      Color(0xFF2B6BFF)
+                                    ],
+                                  )
+                                : null,
+                            color: isActive ? null : Colors.transparent,
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              ),
+              Positioned(
+                left: 0,
+                right: 0,
+                bottom: -1,
+                child: Container(
+                  height: 1,
+                  color: Colors.white.withOpacity(0.06),
                 ),
-              );
-            },
+              ),
+            ],
           ),
-        ),
-        const SizedBox(height: 4),
-        Divider(
-          color: Colors.white.withOpacity(0.06),
-          height: 1,
-          thickness: 1,
         ),
       ],
     );
@@ -711,32 +770,29 @@ class _QuickActionCarousel extends StatelessWidget {
     }
     return Stack(
       children: [
+        PageView.builder(
+          controller: controller,
+          itemCount: actions.length,
+          onPageChanged: (_) => onInteraction(),
+          itemBuilder: (context, index) {
+            final action = actions[index];
+            return Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 2),
+              child: _QuickActionCard(
+                action: action,
+                statusLabel: statusLabel,
+                actionLabel: actionLabel,
+                onTap: () => onTap(action),
+              ),
+            );
+          },
+        ),
         Positioned(
-          top: 0,
-          left: 0,
+          top: 14,
+          left: 20,
           child: _QuickActionIndicator(
             controller: controller,
             itemCount: actions.length,
-          ),
-        ),
-        Padding(
-          padding: const EdgeInsets.only(top: 24),
-          child: PageView.builder(
-            controller: controller,
-            itemCount: actions.length,
-            onPageChanged: (_) => onInteraction(),
-            itemBuilder: (context, index) {
-              final action = actions[index];
-              return Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 2),
-                child: _QuickActionCard(
-                  action: action,
-                  statusLabel: statusLabel,
-                  actionLabel: actionLabel,
-                  onTap: () => onTap(action),
-                ),
-              );
-            },
           ),
         ),
       ],
@@ -1027,26 +1083,34 @@ class _HomePinnedHeaderDelegate extends SliverPersistentHeaderDelegate {
     double shrinkOffset,
     bool overlapsContent,
   ) {
-    return Container(
+    final showShadow = overlapsContent || shrinkOffset > 1;
+    return DecoratedBox(
       decoration: BoxDecoration(
-        color: const Color(0xFF08112A),
-        boxShadow: overlapsContent
+        gradient: const LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [Color(0xFF161616), Color(0xFF111218)],
+        ),
+        border: Border(
+          bottom: BorderSide(color: Colors.white.withOpacity(0.05)),
+        ),
+        boxShadow: showShadow
             ? [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.22),
-                  blurRadius: 16,
-                  offset: const Offset(0, 8),
+                  color: Colors.black.withOpacity(0.28),
+                  blurRadius: 18,
+                  offset: const Offset(0, 10),
                 ),
               ]
             : null,
       ),
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
+        padding: const EdgeInsets.fromLTRB(20, 14, 20, 0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _HomeHero(subtitle: subtitle),
-            const SizedBox(height: 18),
+            const SizedBox(height: 16),
             _CategoryTabStrip(
               categories: categories,
               selectedId: selectedId,
@@ -1064,4 +1128,50 @@ class _HomePinnedHeaderDelegate extends SliverPersistentHeaderDelegate {
         oldDelegate.selectedId != selectedId ||
         oldDelegate.categories != categories;
   }
+}
+
+class _GrainOverlay extends StatelessWidget {
+  const _GrainOverlay();
+
+  @override
+  Widget build(BuildContext context) {
+    return IgnorePointer(
+      child: CustomPaint(
+        painter: _GrainPainter(),
+      ),
+    );
+  }
+}
+
+class _GrainPainter extends CustomPainter {
+  _GrainPainter()
+      : _points = List.generate(
+          2000,
+          (index) {
+            final random = Random(index * 73 + 11);
+            return Offset(random.nextDouble(), random.nextDouble());
+          },
+        );
+
+  final List<Offset> _points;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..strokeCap = StrokeCap.round;
+    for (var i = 0; i < _points.length; i++) {
+      final point = Offset(
+        _points[i].dx * size.width,
+        _points[i].dy * size.height,
+      );
+      final intensity = ((point.dx + point.dy) % 150) / 150;
+      paint
+        ..color = Colors.white.withOpacity(0.012 + intensity * 0.025)
+        ..strokeWidth = 0.8 + intensity * 0.6;
+      canvas.drawCircle(point, paint.strokeWidth * 0.5, paint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
