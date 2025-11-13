@@ -296,27 +296,20 @@ class _GlobalCreditPill extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(22),
-            gradient: const LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [Color(0xFF2857FF), Color(0xFF4F46E5)],
+            color: const Color(0xFF2957FF),
+            border: Border.all(
+              color: Colors.white.withOpacity(0.1),
+              width: 1,
             ),
-            boxShadow: [
-              BoxShadow(
-                color: const Color(0xFF2857FF).withOpacity(0.28),
-                blurRadius: 18,
-                offset: const Offset(0, 10),
-              ),
-            ],
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
               Container(
                 padding: const EdgeInsets.all(6),
-                decoration: BoxDecoration(
+                decoration: const BoxDecoration(
                   shape: BoxShape.circle,
-                  color: Colors.white.withOpacity(0.2),
+                  color: Color(0x332857FF),
                 ),
                 child: const Icon(Icons.bolt, color: Colors.white, size: 16),
               ),

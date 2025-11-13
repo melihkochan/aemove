@@ -764,7 +764,7 @@ class _QuickActionCarousel extends StatelessWidget {
           itemBuilder: (context, index) {
             final action = actions[index];
             return Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 2),
+              padding: const EdgeInsets.symmetric(horizontal: 0),
               child: _QuickActionCard(
                 action: action,
                 statusLabel: statusLabel,
@@ -775,8 +775,8 @@ class _QuickActionCarousel extends StatelessWidget {
           },
         ),
         Positioned(
-          top: 14,
-          left: 20,
+          top: 12,
+          left: 16,
           child: _QuickActionIndicator(
             controller: controller,
             itemCount: actions.length,
@@ -799,7 +799,7 @@ class _QuickActionIndicator extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(left: 6, top: 4),
+      padding: const EdgeInsets.only(left: 0, top: 2),
       child: AnimatedBuilder(
         animation: controller,
         builder: (context, _) {
@@ -812,12 +812,12 @@ class _QuickActionIndicator extends StatelessWidget {
             children: List.generate(itemCount, (index) {
               final isActive = (page - index).abs() < 0.5;
               return AnimatedContainer(
-                duration: const Duration(milliseconds: 200),
-                margin: const EdgeInsets.only(right: 6),
-                width: isActive ? 10 : 6,
-                height: isActive ? 10 : 6,
+                duration: const Duration(milliseconds: 220),
+                margin: const EdgeInsets.only(right: 8),
+                width: isActive ? 12 : 7,
+                height: 7,
                 decoration: BoxDecoration(
-                  shape: BoxShape.circle,
+                  borderRadius: BorderRadius.circular(8),
                   color: isActive
                       ? Colors.white
                       : Colors.white.withValues(alpha: 0.35),
@@ -850,7 +850,7 @@ class _QuickActionCard extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(22),
+        borderRadius: BorderRadius.circular(26),
         child: Stack(
           children: [
             Positioned.fill(
@@ -878,7 +878,7 @@ class _QuickActionCard extends StatelessWidget {
               ),
             ),
             Padding(
-              padding: const EdgeInsets.all(18),
+              padding: const EdgeInsets.fromLTRB(20, 28, 20, 20),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -889,7 +889,7 @@ class _QuickActionCard extends StatelessWidget {
                       fontWeight: FontWeight.w700,
                     ),
                   ),
-                  const SizedBox(height: 6),
+                  const SizedBox(height: 10),
                   Text(
                     action.subtitle,
                     maxLines: 2,
