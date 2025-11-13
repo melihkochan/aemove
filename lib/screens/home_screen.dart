@@ -21,6 +21,8 @@ class _HomeScreenState extends State<HomeScreen> {
   final int _availableCredits = 24;
   late final PageController _quickActionController;
   Timer? _quickActionTimer;
+  final ScrollController _scrollController = ScrollController();
+  final GlobalKey _categorySectionKey = GlobalKey();
 
   @override
   void initState() {
@@ -49,10 +51,32 @@ class _HomeScreenState extends State<HomeScreen> {
   void dispose() {
     _quickActionTimer?.cancel();
     _quickActionController.dispose();
+    _scrollController.dispose();
     super.dispose();
   }
 
   String _homeTr(String key) => 'home.$key'.tr();
+
+  List<CategoryFeedItem> get _currentFeedItems {
+    final items = categoryFeedItems[_selectedCategoryId];
+    if (items != null && items.isNotEmpty) {
+      return items;
+    }
+    return categoryFeedItems['all'] ?? const [];
+  }
+
+  void _handleTemplateTap(CapabilityTemplate template) {
+    final model = _findModel(template.modelId);
+    if (model == null) {
+      _showToast('Model bağlantısı hazırlanıyor.');
+      return;
+    }
+    if (model.isComingSoon) {
+      _showToast('${model.name} yakında kullanılabilir olacak.');
+      return;
+    }
+    _openGeneration(context, model);
+  }
 
   void _handleCategorySelect(String id) {
     if (_selectedCategoryId == id) return;
@@ -66,6 +90,13 @@ class _HomeScreenState extends State<HomeScreen> {
       );
       _startQuickActionTicker();
     }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _scrollController.animateTo(
+        0,
+        duration: const Duration(milliseconds: 420),
+        curve: Curves.easeOutCubic,
+      );
+    });
   }
 
   ModelOption? _findModel(String modelId) {
@@ -93,23 +124,16 @@ class _HomeScreenState extends State<HomeScreen> {
     _showToast('${action.title} • ${_homeTr('quickActionToast')}');
   }
 
+  void _handleFeedTap(CategoryFeedItem item) {
+    _showToast('${item.title} • yakında yayınlama akışına bağlanacak.');
+  }
+
   String _categoryTitle(String id) {
     final matched = videoCategories.firstWhere(
       (category) => category.id == id,
       orElse: () => videoCategories.first,
     );
     return matched.title;
-  }
-
-  List<String> get _selectedEffects {
-    if (_selectedCategoryId == 'all') {
-      return const [];
-    }
-    final effects = categoryEffects[_selectedCategoryId];
-    if (effects == null || effects.isEmpty) {
-      return const [];
-    }
-    return effects.length > 18 ? effects.take(18).toList() : effects;
   }
 
   void _handleTrend(HomeTrend trend) {
@@ -132,11 +156,10 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final mediaQuery = MediaQuery.of(context);
-    final selectedCategoryLabel = _categoryTitle(_selectedCategoryId);
-    final selectedEffects = _selectedEffects;
-    final hasSelectedEffects = selectedEffects.isNotEmpty;
     final quickActionStatus = _homeTr('quickActionsStatus');
     final quickActionCTA = _homeTr('quickActionsPreview');
+    final bool isAll = _selectedCategoryId == 'all';
+    final feedItems = _currentFeedItems;
     return Scaffold(
       body: Container(
         decoration: const BoxDecoration(
@@ -148,6 +171,7 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         child: SafeArea(
           child: CustomScrollView(
+            controller: _scrollController,
             slivers: [
               SliverToBoxAdapter(
                 child: Padding(
@@ -169,59 +193,61 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
               ),
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _SectionHeader(
-                        title: 'Hızlı başlangıçlar',
-                        subtitle: 'Dakikalar içinde hazır senaryoları deneyin',
-                      ),
-                      const SizedBox(height: 16),
-                      SizedBox(
-                        height: 240,
-                        child: _QuickActionCarousel(
-                          controller: _quickActionController,
-                          actions: homeQuickActions,
-                          statusLabel: quickActionStatus,
-                          actionLabel: quickActionCTA,
-                          onTap: _handleQuickAction,
-                          onInteraction: _startQuickActionTicker,
+              if (isAll)
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _SectionHeader(
+                          title: 'Hızlı başlangıçlar',
+                          subtitle: 'Dakikalar içinde hazır senaryoları deneyin',
                         ),
-                      ),
-                      const SizedBox(height: 24),
-                      _SectionHeader(
-                        title: 'Trend keşifleri',
-                        subtitle: 'Sık denenen sahne ve modeller',
-                      ),
-                      const SizedBox(height: 14),
-                      SizedBox(
-                        height: 210,
-                        child: ListView.separated(
-                          scrollDirection: Axis.horizontal,
-                          itemCount: homeTrends.length,
-                          separatorBuilder: (_, __) =>
-                              const SizedBox(width: 16),
-                          itemBuilder: (context, index) {
-                            final trend = homeTrends[index];
-                            return _TrendCard(
-                              trend: trend,
-                              onTap: () => _handleTrend(trend),
-                            );
-                          },
+                        const SizedBox(height: 16),
+                        SizedBox(
+                          height: 240,
+                          child: _QuickActionCarousel(
+                            controller: _quickActionController,
+                            actions: homeQuickActions,
+                            statusLabel: quickActionStatus,
+                            actionLabel: quickActionCTA,
+                            onTap: _handleQuickAction,
+                            onInteraction: _startQuickActionTicker,
+                          ),
                         ),
-                      ),
-                    ],
+                        const SizedBox(height: 24),
+                        _SectionHeader(
+                          title: 'Trend keşifleri',
+                          subtitle: 'Sık denenen sahne ve modeller',
+                        ),
+                        const SizedBox(height: 14),
+                        SizedBox(
+                          height: 210,
+                          child: ListView.separated(
+                            scrollDirection: Axis.horizontal,
+                            itemCount: homeTrends.length,
+                            separatorBuilder: (_, __) =>
+                                const SizedBox(width: 16),
+                            itemBuilder: (context, index) {
+                              final trend = homeTrends[index];
+                              return _TrendCard(
+                                trend: trend,
+                                onTap: () => _handleTrend(trend),
+                              );
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-              ),
               SliverToBoxAdapter(
+                key: _categorySectionKey,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 28),
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 20),
                       child: _SectionHeader(
@@ -230,7 +256,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             'Favori tarzını seç, üstteki akış anında yenilensin',
                       ),
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 12),
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 12),
                       child: _CategoryShowcaseGrid(
@@ -241,21 +267,44 @@ class _HomeScreenState extends State<HomeScreen> {
                         onSelected: _handleCategorySelect,
                       ),
                     ),
-                    if (hasSelectedEffects) ...[
-                      const SizedBox(height: 18),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 20),
-                        child: _EffectPanel(
-                          categoryLabel: selectedCategoryLabel,
-                          effects: selectedEffects,
-                        ),
-                      ),
-                    ],
                   ],
                 ),
               ),
+              if (!isAll)
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
+                    child: _SectionHeader(
+                      title: _categoryTitle(_selectedCategoryId),
+                      subtitle: 'Seçili kategori için önerilen içerikler',
+                    ),
+                  ),
+                ),
+              if (feedItems.isNotEmpty)
+                SliverPadding(
+                  padding: const EdgeInsets.fromLTRB(20, 18, 20, 0),
+                  sliver: SliverGrid(
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 2,
+                      mainAxisSpacing: 18,
+                      crossAxisSpacing: 18,
+                      childAspectRatio: 0.72,
+                    ),
+                    delegate: SliverChildBuilderDelegate(
+                      (context, index) {
+                        final item = feedItems[index];
+                        return _FeedCard(
+                          item: item,
+                          onTap: () => _handleFeedTap(item),
+                        );
+                      },
+                      childCount: feedItems.length,
+                    ),
+                  ),
+                ),
               SliverToBoxAdapter(
-                child: SizedBox(height: 60 + mediaQuery.padding.bottom),
+                child: SizedBox(height: 140 + mediaQuery.padding.bottom),
               ),
             ],
           ),
@@ -392,14 +441,15 @@ class _CategoryTabStrip extends StatelessWidget {
     final theme = Theme.of(context);
     return Column(
       mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         SizedBox(
-          height: 44,
+          height: 40,
           child: ListView.separated(
             scrollDirection: Axis.horizontal,
             itemCount: categories.length,
-            padding: const EdgeInsets.symmetric(horizontal: 8),
-            separatorBuilder: (_, __) => const SizedBox(width: 16),
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            separatorBuilder: (_, __) => const SizedBox(width: 14),
             itemBuilder: (context, index) {
               final category = categories[index];
               final isActive = category.id == selectedId;
@@ -407,8 +457,7 @@ class _CategoryTabStrip extends StatelessWidget {
                 onTap: () => onSelected(category.id),
                 child: Text(
                   category.title,
-                  style: theme.textTheme.titleSmall?.copyWith(
-                    letterSpacing: -0.2,
+                  style: theme.textTheme.labelLarge?.copyWith(
                     fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
                     color: isActive
                         ? Colors.white
@@ -419,6 +468,7 @@ class _CategoryTabStrip extends StatelessWidget {
             },
           ),
         ),
+        const SizedBox(height: 8),
         Divider(
           color: Colors.white.withValues(alpha: 0.08),
           thickness: 1,
@@ -444,8 +494,8 @@ class _CategoryShowcaseGrid extends StatelessWidget {
   Widget build(BuildContext context) {
     final mediaQuery = MediaQuery.of(context);
     final width = mediaQuery.size.width;
-    final crossAxisCount = width < 380 ? 2 : 3;
-    final childAspectRatio = width < 420 ? 0.9 : 1.05;
+    final crossAxisCount = width < 420 ? 2 : 3;
+    final childAspectRatio = width < 420 ? 0.92 : 1.1;
     return GridView.builder(
       physics: const NeverScrollableScrollPhysics(),
       shrinkWrap: true,
@@ -459,10 +509,9 @@ class _CategoryShowcaseGrid extends StatelessWidget {
       itemCount: categories.length,
       itemBuilder: (context, index) {
         final category = categories[index];
-        final isActive = selectedId == category.id;
         return _CategoryShowcaseCard(
           category: category,
-          isActive: isActive,
+          isActive: false,
           onTap: () => onSelected(category.id),
         );
       },
@@ -492,15 +541,14 @@ class _CategoryShowcaseCard extends StatelessWidget {
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: Colors.white.withValues(alpha: isActive ? 0.4 : 0.1),
-            width: isActive ? 2 : 1,
+            color: Colors.white.withValues(alpha: 0.15),
+            width: 1,
           ),
           boxShadow: [
             BoxShadow(
-              color:
-                  (isActive ? baseColor : Colors.black).withValues(alpha: 0.18),
-              blurRadius: isActive ? 16 : 10,
-              offset: const Offset(0, 7),
+              color: Colors.black.withValues(alpha: 0.14),
+              blurRadius: 12,
+              offset: const Offset(0, 6),
             ),
           ],
         ),
@@ -569,73 +617,93 @@ class _CategoryShowcaseCard extends StatelessWidget {
   }
 }
 
-class _EffectPanel extends StatelessWidget {
-  const _EffectPanel({
-    required this.categoryLabel,
-    required this.effects,
+class _FeedCard extends StatelessWidget {
+  const _FeedCard({
+    required this.item,
+    required this.onTap,
   });
 
-  final String categoryLabel;
-  final List<String> effects;
+  final CategoryFeedItem item;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final title = '$categoryLabel efektleri';
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          title,
-          style: theme.textTheme.titleSmall?.copyWith(
-            color: Colors.white,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
-        const SizedBox(height: 10),
-        Wrap(
-          spacing: 10,
-          runSpacing: 10,
-          children: effects
-              .map((effect) => _EffectChip(
-                    label: effect,
-                  ))
-              .toList(),
-        ),
-      ],
-    );
-  }
-}
-
-class _EffectChip extends StatelessWidget {
-  const _EffectChip({required this.label});
-
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(14),
-        gradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            Color(0x331F7CFF),
-            Color(0x332763FF),
+    return GestureDetector(
+      onTap: onTap,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(20),
+        child: Stack(
+          children: [
+            Positioned.fill(
+              child: Image.network(
+                item.imageUrl,
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) =>
+                    Container(color: Colors.black.withValues(alpha: 0.3)),
+              ),
+            ),
+            Positioned.fill(
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Colors.black.withValues(alpha: 0.05),
+                      Colors.black.withValues(alpha: 0.72),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(12),
+                      color: Colors.white.withValues(alpha: 0.15),
+                    ),
+                    child: Text(
+                      item.id.toUpperCase().replaceAll('-', ' '),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: theme.textTheme.labelSmall?.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                  const Spacer(),
+                  Text(
+                    item.title,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    item.subtitle,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: Colors.white.withValues(alpha: 0.85),
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ],
-        ),
-        border: Border.all(
-          color: Colors.white.withValues(alpha: 0.12),
-        ),
-      ),
-      child: Text(
-        label,
-        style: theme.textTheme.labelMedium?.copyWith(
-          color: Colors.white,
-          fontWeight: FontWeight.w500,
         ),
       ),
     );

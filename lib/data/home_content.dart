@@ -74,6 +74,20 @@ class CapabilityTemplate {
   final String? imageUrl;
 }
 
+class CategoryFeedItem {
+  const CategoryFeedItem({
+    required this.id,
+    required this.title,
+    required this.subtitle,
+    required this.imageUrl,
+  });
+
+  final String id;
+  final String title;
+  final String subtitle;
+  final String imageUrl;
+}
+
 const homeQuickActions = [
   HomeQuickAction(
     id: 'restore',
@@ -209,6 +223,241 @@ const categoryEffects = {
     'Crying',
     'Kissing',
     'Angry Face',
+  ],
+};
+
+const categoryFeedItems = {
+  'all': [
+    CategoryFeedItem(
+      id: 'all-character-swap',
+      title: 'Character Swap',
+      subtitle: 'Replace characters in any clip in seconds.',
+      imageUrl:
+          'https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?auto=format&fit=crop&w=1200&q=80',
+    ),
+    CategoryFeedItem(
+      id: 'all-baby-face',
+      title: 'Baby Face & Animate',
+      subtitle: 'Give portraits a dreamy cinematic finish.',
+      imageUrl:
+          'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=1200&q=80',
+    ),
+    CategoryFeedItem(
+      id: 'all-veo',
+      title: 'Veo Visual Guide',
+      subtitle: 'Cinematic motion blocks crafted for story beats.',
+      imageUrl:
+          'https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=1200&q=80',
+    ),
+    CategoryFeedItem(
+      id: 'all-fantasy',
+      title: 'Fantasy Forest',
+      subtitle: 'Spellbinding woodland dream sequences.',
+      imageUrl:
+          'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1200&q=80',
+    ),
+  ],
+  'popular': [
+    CategoryFeedItem(
+      id: 'popular-photo-restore',
+      title: 'Photo Restore & Animate',
+      subtitle: 'Fix lighting, remove scratches and bring to life.',
+      imageUrl:
+          'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=1200&q=80',
+    ),
+    CategoryFeedItem(
+      id: 'popular-baby-face',
+      title: 'Baby Face',
+      subtitle: 'Soft portraits tuned for social-ready loops.',
+      imageUrl:
+          'https://images.unsplash.com/photo-1548943487-a2e4e43b4853?auto=format&fit=crop&w=1200&q=80',
+    ),
+    CategoryFeedItem(
+      id: 'popular-portrait',
+      title: 'Dream Portrait',
+      subtitle: 'Use cinematic glow grading for characters.',
+      imageUrl:
+          'https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?auto=format&fit=crop&w=1200&q=80',
+    ),
+    CategoryFeedItem(
+      id: 'popular-morph',
+      title: 'Face Morph',
+      subtitle: 'Swap identities with smooth interpolation.',
+      imageUrl:
+          'https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=1200&q=80',
+    ),
+    CategoryFeedItem(
+      id: 'popular-storyboard',
+      title: 'Storyboard Builder',
+      subtitle: 'Generate a 6-shot preview for each scene.',
+      imageUrl:
+          'https://images.unsplash.com/photo-1526481280695-3c469928b67b?auto=format&fit=crop&w=1200&q=80',
+    ),
+  ],
+  'cinematic': [
+    CategoryFeedItem(
+      id: 'cinematic-gun',
+      title: 'Gun Shooting',
+      subtitle: 'Blockbuster muzzle flash and depth-of-field burst.',
+      imageUrl:
+          'https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?auto=format&fit=crop&w=1200&q=80',
+    ),
+    CategoryFeedItem(
+      id: 'cinematic-pan',
+      title: 'Cinematic Pan',
+      subtitle: '4K smooth camera pan presets for hero shots.',
+      imageUrl:
+          'https://images.unsplash.com/photo-1489515217757-5fd1be406fef?auto=format&fit=crop&w=1200&q=80',
+    ),
+    CategoryFeedItem(
+      id: 'cinematic-orbit',
+      title: 'Orbit Motion',
+      subtitle: 'Create dramatic reveal moves in seconds.',
+      imageUrl:
+          'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?auto=format&fit=crop&w=1200&q=80',
+    ),
+  ],
+  'fantasy': [
+    CategoryFeedItem(
+      id: 'fantasy-snow',
+      title: 'Snow White',
+      subtitle: 'Fairytale grading and enchanted lighting.',
+      imageUrl:
+          'https://images.unsplash.com/photo-1523419409543-0c1df022bdd7?auto=format&fit=crop&w=1200&q=80',
+    ),
+    CategoryFeedItem(
+      id: 'fantasy-epic',
+      title: 'Epic Warrior',
+      subtitle: 'Turn actors into legendary warriors instantly.',
+      imageUrl:
+          'https://images.unsplash.com/photo-1504384308090-c894fdcc538d?auto=format&fit=crop&w=1200&q=80',
+    ),
+    CategoryFeedItem(
+      id: 'fantasy-dragon',
+      title: 'Dragon Call',
+      subtitle: 'Add roaring drakes flying past the scene.',
+      imageUrl:
+          'https://images.unsplash.com/photo-1517816428104-797678c7cf0d?auto=format&fit=crop&w=1200&q=80',
+    ),
+  ],
+  'artistic': [
+    CategoryFeedItem(
+      id: 'artistic-mona',
+      title: 'Mona Lisa Mode',
+      subtitle: 'Classic painting filter for portraits.',
+      imageUrl:
+          'https://images.unsplash.com/photo-1526481280695-3c469928b67b?auto=format&fit=crop&w=1200&q=80',
+    ),
+    CategoryFeedItem(
+      id: 'artistic-anime',
+      title: 'Anime Style',
+      subtitle: 'Frame-by-frame cel shading with neon palettes.',
+      imageUrl:
+          'https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?auto=format&fit=crop&w=1200&q=80',
+    ),
+    CategoryFeedItem(
+      id: 'artistic-oil',
+      title: 'Oil Painting',
+      subtitle: 'Impressionist brush strokes in one tap.',
+      imageUrl:
+          'https://images.unsplash.com/photo-1545239351-1141bd82e8a6?auto=format&fit=crop&w=1200&q=80',
+    ),
+  ],
+  'camera': [
+    CategoryFeedItem(
+      id: 'camera-dolly',
+      title: 'Dolly In',
+      subtitle: 'Smooth push-in for establishing shots.',
+      imageUrl:
+          'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1200&q=80',
+    ),
+    CategoryFeedItem(
+      id: 'camera-bullet',
+      title: 'Bullet Time',
+      subtitle: 'Matrix-inspired freeze spins for action beats.',
+      imageUrl:
+          'https://images.unsplash.com/photo-1516642898673-edd1ced028bd?auto=format&fit=crop&w=1200&q=80',
+    ),
+  ],
+  'polaroid': [
+    CategoryFeedItem(
+      id: 'polaroid-smile',
+      title: 'Polaroid Smile',
+      subtitle: 'Retro instant frame for cheerful scenes.',
+      imageUrl:
+          'https://images.unsplash.com/photo-1504595403659-9088ce801e29?auto=format&fit=crop&w=1200&q=80',
+    ),
+    CategoryFeedItem(
+      id: 'polaroid-laugh',
+      title: 'Polaroid Laugh',
+      subtitle: 'Animated flipbook polaroid transitions.',
+      imageUrl:
+          'https://images.unsplash.com/photo-1478720568477-152d9b164e26?auto=format&fit=crop&w=1200&q=80',
+    ),
+  ],
+  'vintage': [
+    CategoryFeedItem(
+      id: 'vintage-bride',
+      title: 'Bride Elegance',
+      subtitle: 'Soft pastel wedding looks with film grain.',
+      imageUrl:
+          'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=1200&q=80',
+    ),
+    CategoryFeedItem(
+      id: 'vintage-classy',
+      title: 'Classy Look',
+      subtitle: 'Golden hour glamour for lifestyle footage.',
+      imageUrl:
+          'https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?auto=format&fit=crop&w=1200&q=80',
+    ),
+  ],
+  'futuristic': [
+    CategoryFeedItem(
+      id: 'futuristic-zoom',
+      title: 'Zoom Call Studio',
+      subtitle: 'Lightweight virtual studios with glass UI.',
+      imageUrl:
+          'https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=1200&q=80',
+    ),
+    CategoryFeedItem(
+      id: 'futuristic-robot',
+      title: 'Robot Face Reveal',
+      subtitle: 'Switch faces to robotic textures instantly.',
+      imageUrl:
+          'https://images.unsplash.com/photo-1545239351-1141bd82e8a6?auto=format&fit=crop&w=1200&q=80',
+    ),
+  ],
+  'nature': [
+    CategoryFeedItem(
+      id: 'nature-jungle',
+      title: 'Jungle Adventure',
+      subtitle: 'Dense foliage and volumetric light setups.',
+      imageUrl:
+          'https://images.unsplash.com/photo-1500534260348-0b3fadec0d66?auto=format&fit=crop&w=1200&q=80',
+    ),
+    CategoryFeedItem(
+      id: 'nature-zen',
+      title: 'Zen Master',
+      subtitle: 'Slow meditation cuts with mist overlays.',
+      imageUrl:
+          'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1200&q=80',
+    ),
+  ],
+  'abstract': [
+    CategoryFeedItem(
+      id: 'abstract-spin',
+      title: 'Spin Rotate',
+      subtitle: 'High-energy rotations for motion graphics.',
+      imageUrl:
+          'https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=1200&q=80',
+    ),
+    CategoryFeedItem(
+      id: 'abstract-time',
+      title: 'Time Lapse',
+      subtitle: 'Compress long sequences into dynamic loops.',
+      imageUrl:
+          'https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?auto=format&fit=crop&w=1200&q=80',
+    ),
   ],
 };
 
