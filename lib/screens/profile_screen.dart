@@ -68,42 +68,101 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final accent = const Color(0xFF4F8BFF);
+    final backgroundDark = const Color(0xFF040814);
+    final backgroundDeep = const Color(0xFF071029);
     final plans = _selectedTab == 0 ? _subscriptionPlans : _creditPackPlans;
     final locale = _selectedLocale ?? context.locale;
     final locales = context.supportedLocales;
 
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
         title: Text(
           'profile.title'.tr(),
           style: theme.textTheme.titleLarge?.copyWith(
             fontWeight: FontWeight.w700,
+            letterSpacing: -0.2,
           ),
         ),
-        actions: [
-          IconButton(
-            onPressed: () {},
-            icon: const Icon(Icons.settings_outlined),
-          ),
-          const SizedBox(width: 8),
-        ],
       ),
+      extendBodyBehindAppBar: true,
       body: Container(
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: [Color(0xFF04070f), Color(0xFF101b33)],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
+            colors: [backgroundDark, backgroundDeep],
           ),
         ),
         child: SafeArea(
           child: ListView(
-            padding: const EdgeInsets.fromLTRB(20, 24, 20, 120),
+            padding: const EdgeInsets.fromLTRB(20, 24, 20, 140),
             children: [
-              _ProfileHeader(credits: _availableCredits),
+              _ProfileHeader(credits: _availableCredits, accent: accent),
+              const SizedBox(height: 20),
+              _PlanSegmentedControl(
+                selectedIndex: _selectedTab,
+                onChanged: (value) => setState(() => _selectedTab = value),
+                accent: accent,
+              ),
+              const SizedBox(height: 16),
+              _PremiumInfoSection(accent: accent),
+              const SizedBox(height: 16),
+              SizedBox(
+                height: 232,
+                child: ListView.separated(
+                  scrollDirection: Axis.horizontal,
+                  physics: const BouncingScrollPhysics(),
+                  padding: const EdgeInsets.only(right: 4),
+                  itemCount: plans.length,
+                  separatorBuilder: (_, __) => const SizedBox(width: 18),
+                  itemBuilder: (context, index) {
+                    final plan = plans[index];
+                    final credits = plan['credits'] as int;
+                    final price = plan['price'] as String;
+                    final labelKey = plan['labelKey'] as String;
+                    final badgeKey = plan['badgeKey'] as String?;
+                    final highlight = plan['highlight'] == true;
+                    final cardWidth = highlight ? 240.0 : 220.0;
+                    return SizedBox(
+                      width: cardWidth,
+                      child: _CreditPlanCard(
+                        credits: credits,
+                        price: price,
+                        label: tr(labelKey),
+                        badge: badgeKey == null ? null : tr(badgeKey),
+                        highlight: highlight,
+                        accent: accent,
+                      ),
+                    );
+                  },
+                ),
+              ),
               const SizedBox(height: 24),
-              _CreditsSummaryCard(availableCredits: _availableCredits),
-              const SizedBox(height: 24),
+              OutlinedButton.icon(
+                onPressed: () {},
+                icon: Icon(
+                  Icons.refresh_outlined,
+                  color: accent,
+                ),
+                label: Text(
+                  'profile.restore'.tr(),
+                  style: TextStyle(color: accent),
+                ),
+                style: OutlinedButton.styleFrom(
+                  side: BorderSide(color: accent.withValues(alpha: 0.6)),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 22,
+                    vertical: 14,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(18),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 28),
               _LanguagePreferenceCard(
                 title: 'profile.languageTitle'.tr(),
                 description: 'profile.languageDescription'.tr(),
@@ -113,66 +172,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   setState(() => _selectedLocale = selected);
                   context.setLocale(selected);
                 },
-              ),
-              const SizedBox(height: 28),
-              _PlanSegmentedControl(
-                selectedIndex: _selectedTab,
-                onChanged: (value) => setState(() => _selectedTab = value),
-              ),
-              const SizedBox(height: 24),
-              _PremiumInfoSection(),
-              const SizedBox(height: 20),
-              LayoutBuilder(
-                builder: (context, constraints) {
-                  final maxWidth = constraints.maxWidth;
-                  final itemWidth =
-                      maxWidth >= 420 ? (maxWidth - 16) / 2 : maxWidth;
-                  return Wrap(
-                    spacing: 16,
-                    runSpacing: 16,
-                    children: plans.map((plan) {
-                      final credits = plan['credits'] as int;
-                      final price = plan['price'] as String;
-                      final labelKey = plan['labelKey'] as String;
-                      final badgeKey = plan['badgeKey'] as String?;
-                      final highlight = plan['highlight'] == true;
-                      return SizedBox(
-                        width: itemWidth,
-                        child: _CreditPlanCard(
-                          credits: credits,
-                          price: price,
-                          label: tr(labelKey),
-                          badge: badgeKey == null ? null : tr(badgeKey),
-                          highlight: highlight,
-                        ),
-                      );
-                    }).toList(),
-                  );
-                },
-              ),
-              const SizedBox(height: 28),
-              OutlinedButton.icon(
-                onPressed: () {},
-                icon: Icon(
-                  Icons.refresh_outlined,
-                  color: theme.colorScheme.primary,
-                ),
-                label: Text(
-                  'profile.restore'.tr(),
-                  style: TextStyle(color: theme.colorScheme.primary),
-                ),
-                style: OutlinedButton.styleFrom(
-                  side: BorderSide(
-                    color: theme.colorScheme.primary.withValues(alpha: 0.6),
-                  ),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 20,
-                    vertical: 14,
-                  ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(18),
-                  ),
-                ),
+                accent: accent,
               ),
               const SizedBox(height: 32),
               _QuickActionTile(
@@ -180,12 +180,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 title: 'profile.rate'.tr(),
                 subtitle: 'profile.rateSubtitle'.tr(),
                 onTap: () {},
+                accent: accent,
               ),
               _QuickActionTile(
                 icon: Icons.chat_bubble_outline,
                 title: 'profile.featureRequests'.tr(),
                 subtitle: 'profile.featureSubtitle'.tr(),
                 onTap: () {},
+                accent: accent,
               ),
               _ToggleTile(
                 icon: Icons.calendar_today_outlined,
@@ -193,6 +195,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 subtitle: 'profile.weeklySubtitle'.tr(),
                 value: _weeklyReminders,
                 onChanged: (value) => setState(() => _weeklyReminders = value),
+                accent: accent,
               ),
               _ToggleTile(
                 icon: Icons.check_circle_outline,
@@ -200,37 +203,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 subtitle: 'profile.videoSubtitle'.tr(),
                 value: _videoCompleted,
                 onChanged: (value) => setState(() => _videoCompleted = value),
+                accent: accent,
               ),
               _QuickActionTile(
                 icon: Icons.mail_outline,
                 title: 'profile.contactSupport'.tr(),
                 subtitle: 'profile.contactSubtitle'.tr(),
                 onTap: () {},
+                accent: accent,
               ),
               const SizedBox(height: 24),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  TextButton(
-                    onPressed: () {},
-                    child: Text('common.privacyPolicy'.tr()),
-                  ),
-                  const Text('·'),
-                  TextButton(
-                    onPressed: () {},
-                    child: Text('common.termsOfService'.tr()),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
-              TextButton.icon(
-                onPressed: () {},
-                icon: const Icon(Icons.delete_outline, color: Colors.redAccent),
-                label: Text(
-                  'common.deleteAccount'.tr(),
-                  style: const TextStyle(color: Colors.redAccent),
-                ),
-              ),
+              _FooterLinks(accent: accent),
+              const SizedBox(height: 12),
             ],
           ),
         ),
@@ -240,405 +224,138 @@ class _ProfileScreenState extends State<ProfileScreen> {
 }
 
 class _ProfileHeader extends StatelessWidget {
-  const _ProfileHeader({required this.credits});
+  const _ProfileHeader({required this.credits, required this.accent});
 
   final int credits;
+  final Color accent;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return Container(
-      padding: const EdgeInsets.all(22),
+      padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(28),
-        gradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [Color(0xFF0f1a32), Color(0xFF0a1222)],
-        ),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.28),
-            blurRadius: 22,
-            offset: const Offset(0, 18),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          CircleAvatar(
-            radius: 32,
-            backgroundColor: theme.colorScheme.primary.withValues(alpha: 0.25),
-            child: const Icon(Icons.person_outline, color: Colors.white, size: 32),
-          ),
-          const SizedBox(width: 18),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'profile.headerTitle'.tr(),
-                  style: theme.textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: -0.2,
-                  ),
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  'profile.headerSubtitle'.tr(),
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    color: Colors.white70,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          _EnergyBadge(credits: credits),
-        ],
-      ),
-    );
-  }
-}
-
-class _EnergyBadge extends StatelessWidget {
-  const _EnergyBadge({required this.credits});
-
-  final int credits;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(20),
         gradient: LinearGradient(
           colors: [
-            theme.colorScheme.primary.withValues(alpha: 0.9),
-            theme.colorScheme.primary.withValues(alpha: 0.6),
+            accent.withValues(alpha: 0.25),
+            accent.withValues(alpha: 0.06),
           ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
         ),
-        boxShadow: [
-          BoxShadow(
-            color: theme.colorScheme.primary.withValues(alpha: 0.32),
-            blurRadius: 20,
-            offset: const Offset(0, 12),
-          ),
-        ],
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: Colors.white.withValues(alpha: 0.18),
-            ),
-            child: const Icon(Icons.bolt, color: Colors.white, size: 18),
-          ),
-          const SizedBox(width: 10),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'common.credits'.tr(),
-                style: theme.textTheme.labelSmall?.copyWith(
-                  color: Colors.white70,
-                  letterSpacing: 0.3,
-                ),
-              ),
-              Text(
-                '$credits',
-                style: theme.textTheme.titleMedium?.copyWith(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _LanguagePreferenceCard extends StatelessWidget {
-  const _LanguagePreferenceCard({
-    required this.title,
-    required this.description,
-    required this.locales,
-    required this.selectedLocale,
-    required this.onLocaleSelected,
-  });
-
-  final String title;
-  final String description;
-  final List<Locale> locales;
-  final Locale selectedLocale;
-  final ValueChanged<Locale> onLocaleSelected;
-
-  static const Map<String, String> _flags = {'en': '🇺🇸', 'tr': '🇹🇷'};
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(24),
-        color: Colors.white.withValues(alpha: 0.02),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            title,
-            style: theme.textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            description,
+            'Sahip olduğun krediler',
             style: theme.textTheme.bodySmall?.copyWith(
               color: Colors.white70,
             ),
           ),
-          const SizedBox(height: 18),
-          Wrap(
-            spacing: 12,
-            runSpacing: 12,
-            children: locales.map((locale) {
-              final code = locale.languageCode;
-              final selected = selectedLocale.languageCode == code;
-              final flag = _flags[code] ?? '🌐';
-              return GestureDetector(
-                onTap: () => onLocaleSelected(locale),
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 200),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 12,
-                  ),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(18),
-                    gradient: selected
-                        ? LinearGradient(
-                            colors: [
-                              theme.colorScheme.primary.withValues(alpha: 0.8),
-                              theme.colorScheme.primary.withValues(alpha: 0.55),
-                            ],
-                          )
-                        : null,
-                    color: selected
-                        ? null
-                        : Colors.white.withValues(alpha: 0.04),
-                    border: Border.all(
-                      color: selected
-                          ? theme.colorScheme.primary.withValues(alpha: 0.65)
-                          : Colors.white.withValues(alpha: 0.08),
-                    ),
-                    boxShadow: selected
-                        ? [
-                            BoxShadow(
-                              color: theme.colorScheme.primary
-                                  .withValues(alpha: 0.32),
-                              blurRadius: 18,
-                              offset: const Offset(0, 10),
-                            ),
-                          ]
-                        : [],
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        flag,
-                        style: const TextStyle(fontSize: 18),
-                      ),
-                      const SizedBox(width: 10),
-                      Text(
-                        'profile.languageOption.$code'.tr(),
-                        style: theme.textTheme.labelLarge?.copyWith(
-                          color: Colors.white,
-                          fontWeight:
-                              selected ? FontWeight.w700 : FontWeight.w500,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              );
-            }).toList(),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _PlanSegmentedControl extends StatelessWidget {
-  const _PlanSegmentedControl({
-    required this.selectedIndex,
-    required this.onChanged,
-  });
-
-  final int selectedIndex;
-  final ValueChanged<int> onChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final entries = [
-      {'index': 0, 'label': 'profile.tabs.subscriptions'.tr()},
-      {'index': 1, 'label': 'profile.tabs.packs'.tr()},
-    ];
-    return Container(
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(22),
-        color: Colors.white.withValues(alpha: 0.04),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
-      ),
-      child: Row(
-        children: entries.map((entry) {
-          final index = entry['index'] as int;
-          final label = entry['label'] as String;
-          final selected = selectedIndex == index;
-          return Expanded(
-            child: GestureDetector(
-              onTap: () => onChanged(index),
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 220),
-                padding: const EdgeInsets.symmetric(vertical: 14),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(18),
-                  gradient: selected
-                      ? LinearGradient(
-                          colors: [
-                            theme.colorScheme.primary.withValues(alpha: 0.78),
-                            theme.colorScheme.primary.withValues(alpha: 0.52),
-                          ],
-                        )
-                      : null,
-                  color: selected ? null : Colors.transparent,
-                ),
-                child: Text(
-                  label,
-                  textAlign: TextAlign.center,
-                  style: theme.textTheme.labelLarge?.copyWith(
-                    color: Colors.white,
-                    fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
-                  ),
-                ),
-              ),
+          const SizedBox(height: 6),
+          Text(
+            'Kredi bakiyen',
+            style: theme.textTheme.titleLarge?.copyWith(
+              fontWeight: FontWeight.w700,
+              letterSpacing: -0.2,
             ),
-          );
-        }).toList(),
-      ),
-    );
-  }
-}
-
-class _CreditsSummaryCard extends StatelessWidget {
-  const _CreditsSummaryCard({required this.availableCredits});
-
-  final int availableCredits;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(28),
-        gradient: LinearGradient(
-          colors: [
-            theme.colorScheme.primary.withValues(alpha: 0.9),
-            theme.colorScheme.primary.withValues(alpha: 0.6),
-          ],
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: theme.colorScheme.primary.withValues(alpha: 0.32),
-            blurRadius: 30,
-            offset: const Offset(0, 18),
           ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
+          const SizedBox(height: 22),
           Row(
             children: [
               Container(
+                padding: const EdgeInsets.all(14),
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: Colors.white.withValues(alpha: 0.18),
+                  color: Colors.white.withValues(alpha: 0.12),
                 ),
-                padding: const EdgeInsets.all(12),
-                child: const Icon(Icons.bolt, color: Colors.white, size: 28),
+                child: Icon(Icons.bolt, color: accent, size: 26),
               ),
-              const SizedBox(width: 14),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'profile.creditsTitle'.tr(),
-                    style: theme.textTheme.titleMedium?.copyWith(
-                      color: Colors.white70,
-                    ),
-                  ),
-                  Text(
-                    'profile.creditsLabel'.tr(
-                      namedArgs: {'credits': '$availableCredits'},
-                    ),
-                    style: theme.textTheme.displaySmall?.copyWith(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ],
-              ),
-              const Spacer(),
-              IconButton(
-                onPressed: () {},
-                icon: const Icon(Icons.info_outline, color: Colors.white70),
-              ),
-            ],
-          ),
-          const SizedBox(height: 18),
-          Row(
-            children: [
+              const SizedBox(width: 18),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'profile.nextRefresh'.tr(),
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: Colors.white70,
+                      '$credits',
+                      style: theme.textTheme.displaySmall?.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: -0.8,
                       ),
                     ),
-                    const SizedBox(height: 4),
+                    const SizedBox(height: 6),
                     Text(
-                      'Dec 10, 2025',
-                      style: theme.textTheme.titleMedium?.copyWith(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w600,
+                      'Kullanabileceğin toplam kredi',
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: Colors.white60,
                       ),
                     ),
                   ],
                 ),
               ),
-              ElevatedButton.icon(
+              FilledButton.icon(
                 onPressed: () {},
-                icon: const Icon(Icons.add_rounded),
-                label: Text('profile.addCredits'.tr()),
+                icon: const Icon(Icons.add, size: 18),
+                label: const Text('Kredi yükle'),
+                style: FilledButton.styleFrom(
+                  backgroundColor: Colors.white,
+                  foregroundColor: accent,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 18,
+                    vertical: 12,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(18),
+                  ),
+                ),
               ),
             ],
+          ),
+          const SizedBox(height: 20),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(20),
+              color: Colors.black.withOpacity(0.12),
+            ),
+            child: Row(
+              children: [
+                Icon(Icons.schedule, color: Colors.white54, size: 18),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Bir sonraki yenileme',
+                        style: theme.textTheme.labelSmall?.copyWith(
+                          color: Colors.white60,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        '10 Aralık 2025',
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                TextButton(
+                  onPressed: () {},
+                  style: TextButton.styleFrom(
+                    foregroundColor: accent,
+                  ),
+                  child: const Text('Detay'),
+                ),
+              ],
+            ),
           ),
         ],
       ),
@@ -647,15 +364,19 @@ class _CreditsSummaryCard extends StatelessWidget {
 }
 
 class _PremiumInfoSection extends StatelessWidget {
+  const _PremiumInfoSection({required this.accent});
+
+  final Color accent;
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(22),
         color: Colors.white.withValues(alpha: 0.02),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -667,14 +388,20 @@ class _PremiumInfoSection extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 12),
-          _BenefitRow(icon: Icons.refresh, text: 'profile.premium.line1'.tr()),
+          _BenefitRow(
+            icon: Icons.refresh,
+            text: 'profile.premium.line1'.tr(),
+            accent: accent,
+          ),
           _BenefitRow(
             icon: Icons.flash_on_outlined,
             text: 'profile.premium.line2'.tr(),
+            accent: accent,
           ),
           _BenefitRow(
             icon: Icons.workspace_premium_outlined,
             text: 'profile.premium.line3'.tr(),
+            accent: accent,
           ),
         ],
       ),
@@ -683,10 +410,11 @@ class _PremiumInfoSection extends StatelessWidget {
 }
 
 class _BenefitRow extends StatelessWidget {
-  const _BenefitRow({required this.icon, required this.text});
+  const _BenefitRow({required this.icon, required this.text, required this.accent});
 
   final IconData icon;
   final String text;
+  final Color accent;
 
   @override
   Widget build(BuildContext context) {
@@ -699,9 +427,9 @@ class _BenefitRow extends StatelessWidget {
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: theme.colorScheme.primary.withValues(alpha: 0.18),
+              color: accent.withValues(alpha: 0.15),
             ),
-            child: Icon(icon, color: Colors.white),
+            child: Icon(icon, color: accent),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -725,6 +453,7 @@ class _CreditPlanCard extends StatelessWidget {
     required this.label,
     this.badge,
     this.highlight = false,
+    required this.accent,
   });
 
   final int credits;
@@ -732,82 +461,81 @@ class _CreditPlanCard extends StatelessWidget {
   final String label;
   final String? badge;
   final bool highlight;
+  final Color accent;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final accent = theme.colorScheme.primary;
-    return SizedBox(
-      width: 160,
-      child: Container(
-        padding: const EdgeInsets.all(18),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(24),
-          gradient: highlight
-              ? LinearGradient(
-                  colors: [
-                    accent.withValues(alpha: 0.85),
-                    accent.withValues(alpha: 0.55),
-                  ],
-                )
-              : const LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [Color(0xFF121b33), Color(0xFF0b1226)],
+    final gradient = highlight
+        ? LinearGradient(
+            colors: [accent.withValues(alpha: 0.85), accent.withValues(alpha: 0.5)],
+          )
+        : const LinearGradient(
+            colors: [Color(0xFF0C1425), Color(0xFF0A0F1D)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          );
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(24),
+        gradient: gradient,
+        border: Border.all(
+          color: highlight
+              ? accent.withValues(alpha: 0.65)
+              : Colors.white.withValues(alpha: 0.05),
+        ),
+        boxShadow: highlight
+            ? [
+                BoxShadow(
+                  color: accent.withValues(alpha: 0.32),
+                  blurRadius: 20,
+                  offset: const Offset(0, 12),
                 ),
-          color: null,
-          border: Border.all(
-            color: highlight
-                ? accent.withValues(alpha: 0.5)
-                : Colors.white.withValues(alpha: 0.08),
+              ]
+            : [],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (badge != null)
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(14),
+                color: Colors.black.withOpacity(0.12),
+              ),
+              child: Text(
+                badge!.toUpperCase(),
+                style: theme.textTheme.labelSmall?.copyWith(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          const SizedBox(height: 12),
+          Text(
+            '$credits kredi',
+            style: theme.textTheme.titleMedium?.copyWith(
+              color: Colors.white,
+              fontWeight: FontWeight.w700,
+            ),
           ),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (badge != null)
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 5,
-                ),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(14),
-                  color: Colors.white.withValues(alpha: 0.18),
-                ),
-                child: Text(
-                  badge!.toUpperCase(),
-                  style: theme.textTheme.labelSmall?.copyWith(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-            const SizedBox(height: 12),
-            Text(
-              'profile.creditsLabel'.tr(namedArgs: {'credits': '$credits'}),
-              style: theme.textTheme.titleMedium?.copyWith(
-                color: Colors.white,
-                fontWeight: FontWeight.w700,
-              ),
+          const SizedBox(height: 4),
+          Text(
+            price,
+            style: theme.textTheme.bodyMedium?.copyWith(
+              color: Colors.white70,
             ),
-            const SizedBox(height: 4),
-            Text(
-              price,
-              style: theme.textTheme.bodyMedium?.copyWith(
-                color: Colors.white70,
-              ),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            label,
+            style: theme.textTheme.labelMedium?.copyWith(
+              color: Colors.white.withValues(alpha: 0.92),
             ),
-            const SizedBox(height: 14),
-            Text(
-              label,
-              style: theme.textTheme.labelMedium?.copyWith(
-                color: Colors.white.withValues(alpha: 0.85),
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -819,12 +547,14 @@ class _QuickActionTile extends StatelessWidget {
     required this.title,
     required this.subtitle,
     required this.onTap,
+    required this.accent,
   });
 
   final IconData icon;
   final String title;
   final String subtitle;
   final VoidCallback onTap;
+  final Color accent;
 
   @override
   Widget build(BuildContext context) {
@@ -833,14 +563,14 @@ class _QuickActionTile extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 14),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(20),
-        color: Colors.white.withValues(alpha: 0.03),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
+        color: Colors.white.withValues(alpha: 0.025),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.04)),
       ),
       child: ListTile(
         onTap: onTap,
         leading: CircleAvatar(
           radius: 24,
-          backgroundColor: theme.colorScheme.primary.withValues(alpha: 0.18),
+          backgroundColor: accent.withValues(alpha: 0.18),
           child: Icon(icon, color: Colors.white),
         ),
         title: Text(
@@ -851,12 +581,12 @@ class _QuickActionTile extends StatelessWidget {
         ),
         subtitle: Text(
           subtitle,
-          style: theme.textTheme.bodySmall?.copyWith(color: Colors.white70),
+          style: theme.textTheme.bodySmall?.copyWith(color: Colors.white60),
         ),
-        trailing: const Icon(
+        trailing: Icon(
           Icons.arrow_forward_ios_rounded,
           size: 18,
-          color: Colors.white54,
+          color: Colors.white.withValues(alpha: 0.5),
         ),
       ),
     );
@@ -870,6 +600,7 @@ class _ToggleTile extends StatelessWidget {
     required this.subtitle,
     required this.value,
     required this.onChanged,
+    required this.accent,
   });
 
   final IconData icon;
@@ -877,6 +608,7 @@ class _ToggleTile extends StatelessWidget {
   final String subtitle;
   final bool value;
   final ValueChanged<bool> onChanged;
+  final Color accent;
 
   @override
   Widget build(BuildContext context) {
@@ -885,17 +617,18 @@ class _ToggleTile extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 14),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(20),
-        color: Colors.white.withValues(alpha: 0.03),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
+        color: Colors.white.withValues(alpha: 0.025),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.04)),
       ),
       child: SwitchListTile(
         value: value,
         onChanged: onChanged,
-        activeThumbColor: theme.colorScheme.primary,
+        activeColor: Colors.white,
+        activeTrackColor: accent,
         secondary: CircleAvatar(
           radius: 24,
-          backgroundColor: theme.colorScheme.primary.withValues(alpha: 0.18),
-          child: Icon(icon, color: Colors.white),
+          backgroundColor: accent.withValues(alpha: 0.18),
+          child: Icon(icon, color: accent),
         ),
         title: Text(
           title,
@@ -905,9 +638,233 @@ class _ToggleTile extends StatelessWidget {
         ),
         subtitle: Text(
           subtitle,
-          style: theme.textTheme.bodySmall?.copyWith(color: Colors.white70),
+          style: theme.textTheme.bodySmall?.copyWith(color: Colors.white60),
         ),
       ),
+    );
+  }
+}
+
+class _PlanSegmentedControl extends StatelessWidget {
+  const _PlanSegmentedControl({
+    required this.selectedIndex,
+    required this.onChanged,
+    required this.accent,
+  });
+
+  final int selectedIndex;
+  final ValueChanged<int> onChanged;
+  final Color accent;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final entries = [
+      {'index': 0, 'label': 'profile.tabs.subscriptions'.tr()},
+      {'index': 1, 'label': 'profile.tabs.packs'.tr()},
+    ];
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(24),
+        color: Colors.white.withValues(alpha: 0.02),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.04)),
+      ),
+      child: Row(
+        children: entries.map((entry) {
+          final index = entry['index'] as int;
+          final label = entry['label'] as String;
+          final selected = selectedIndex == index;
+          return Expanded(
+            child: GestureDetector(
+              onTap: () => onChanged(index),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(20),
+                  gradient: selected
+                      ? LinearGradient(
+                          colors: [accent, accent.withValues(alpha: 0.6)],
+                        )
+                      : null,
+                  color: selected ? null : Colors.transparent,
+                ),
+                child: Text(
+                  label,
+                  textAlign: TextAlign.center,
+                  style: theme.textTheme.labelLarge?.copyWith(
+                    color: selected ? Colors.white : Colors.white70,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+            ),
+          );
+        }).toList(),
+      ),
+    );
+  }
+}
+
+class _LanguagePreferenceCard extends StatelessWidget {
+  const _LanguagePreferenceCard({
+    required this.title,
+    required this.description,
+    required this.locales,
+    required this.selectedLocale,
+    required this.onLocaleSelected,
+    required this.accent,
+  });
+
+  final String title;
+  final String description;
+  final List<Locale> locales;
+  final Locale selectedLocale;
+  final ValueChanged<Locale> onLocaleSelected;
+  final Color accent;
+
+  static const Map<String, String> _flags = {'en': '🇺🇸', 'tr': '🇹🇷'};
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(24),
+        color: Colors.white.withValues(alpha: 0.02),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: accent.withOpacity(0.15),
+                ),
+                child: Icon(Icons.language, color: accent),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      description,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: Colors.white70,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 18),
+          SizedBox(
+            height: 64,
+            child: ListView.separated(
+              scrollDirection: Axis.horizontal,
+              physics: const BouncingScrollPhysics(),
+              itemCount: locales.length,
+              separatorBuilder: (_, __) => const SizedBox(width: 12),
+              itemBuilder: (context, index) {
+                final locale = locales[index];
+                final code = locale.languageCode;
+                final selected = selectedLocale.languageCode == code;
+                final flag = _flags[code] ?? '🌐';
+                return ChoiceChip(
+                  selected: selected,
+                  onSelected: (_) => onLocaleSelected(locale),
+                  label: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(flag, style: const TextStyle(fontSize: 18)),
+                      const SizedBox(width: 8),
+                      Text('profile.languageOption.$code'.tr()),
+                    ],
+                  ),
+                  labelStyle: theme.textTheme.labelLarge?.copyWith(
+                        color: selected ? Colors.white : Colors.white70,
+                        fontWeight: FontWeight.w600,
+                      ) ??
+                      TextStyle(
+                        color: selected ? Colors.white : Colors.white70,
+                        fontWeight: FontWeight.w600,
+                      ),
+                  selectedColor: accent,
+                  backgroundColor: Colors.white.withOpacity(0.06),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(18),
+                    side: BorderSide(
+                      color: selected
+                          ? Colors.white.withOpacity(0.4)
+                          : Colors.white.withOpacity(0.1),
+                    ),
+                  ),
+                  showCheckmark: false,
+                  labelPadding:
+                      const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _FooterLinks extends StatelessWidget {
+  const _FooterLinks({required this.accent});
+
+  final Color accent;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            TextButton(
+              onPressed: () {},
+              child: Text(
+                'common.privacyPolicy'.tr(),
+                style: TextStyle(color: Colors.white.withOpacity(0.7)),
+              ),
+            ),
+            const Text('·', style: TextStyle(color: Colors.white54)),
+            TextButton(
+              onPressed: () {},
+              child: Text(
+                'common.termsOfService'.tr(),
+                style: TextStyle(color: Colors.white.withOpacity(0.7)),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        TextButton.icon(
+          onPressed: () {},
+          icon: const Icon(Icons.delete_outline, color: Colors.redAccent),
+          label: Text(
+            'common.deleteAccount'.tr(),
+            style: const TextStyle(color: Colors.redAccent),
+          ),
+        ),
+      ],
     );
   }
 }

@@ -17,6 +17,7 @@ class MainShell extends StatefulWidget {
 
 class _MainShellState extends State<MainShell> {
   int _currentIndex = 0;
+  final int _availableCredits = 24;
 
   final _pages = const [
     HomeScreen(),
@@ -59,6 +60,20 @@ class _MainShellState extends State<MainShell> {
             child: IndexedStack(index: _currentIndex, children: _pages),
           ),
           Positioned(
+            top: 0,
+            right: 0,
+            child: SafeArea(
+              bottom: false,
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(0, 12, 20, 0),
+                child: _GlobalCreditPill(
+                  credits: _availableCredits,
+                  onTap: () => setState(() => _currentIndex = 3),
+                ),
+              ),
+            ),
+          ),
+          Positioned(
             left: 0,
             right: 0,
             bottom: 0,
@@ -69,7 +84,7 @@ class _MainShellState extends State<MainShell> {
                   16,
                   0,
                   16,
-                  bottomInset > 0 ? bottomInset : 6,
+                  bottomInset > 0 ? bottomInset : 18,
                 ),
                 child: _FrostedNavBar(
                   items: _items,
@@ -111,53 +126,90 @@ class _NavButton extends StatelessWidget {
   final VoidCallback onTap;
   final ThemeData theme;
 
+  static const _duration = Duration(milliseconds: 220);
+
   @override
   Widget build(BuildContext context) {
     final accent = theme.colorScheme.primary;
-    return GestureDetector(
-      onTap: onTap,
-      behavior: HitTestBehavior.opaque,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 6),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(18),
-            color: isActive
-                ? theme.colorScheme.primary.withValues(alpha: 0.14)
-                : Colors.white.withValues(alpha: 0.018),
-          ),
-          child: AnimatedScale(
-            duration: const Duration(milliseconds: 150),
-            scale: isActive ? 1.0 : 0.93,
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(22),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+          child: AnimatedContainer(
+            duration: _duration,
             curve: Curves.easeOutCubic,
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(22),
+              color: isActive
+                  ? accent.withValues(alpha: 0.18)
+                  : Colors.white.withValues(alpha: 0.015),
+            ),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                AnimatedSwitcher(
-                  duration: const Duration(milliseconds: 140),
+                AnimatedContainer(
+                  duration: _duration,
+                  curve: Curves.easeOutCubic,
+                  width: isActive ? 30 : 26,
+                  height: isActive ? 30 : 26,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: isActive
+                        ? LinearGradient(
+                            colors: [accent, accent.withValues(alpha: 0.6)],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          )
+                        : null,
+                    color: isActive
+                        ? null
+                        : Colors.white.withValues(alpha: 0.08),
+                    boxShadow: isActive
+                        ? [
+                            BoxShadow(
+                              color: accent.withValues(alpha: 0.3),
+                              blurRadius: 12,
+                              offset: const Offset(0, 6),
+                            ),
+                          ]
+                        : null,
+                  ),
                   child: Icon(
                     isActive ? item.activeIcon : item.icon,
-                    key: ValueKey<bool>(isActive),
-                    color: isActive
-                        ? Colors.white
-                        : Colors.white.withValues(alpha: 0.68),
-                    size: 17,
+                    color: Colors.white,
+                    size: isActive ? 20 : 18,
                   ),
                 ),
-                const SizedBox(height: 2),
-                Text(
-                  'nav.${item.labelKey}'.tr(),
-                  maxLines: 1,
-                  overflow: TextOverflow.fade,
-                  softWrap: false,
-                  style: theme.textTheme.labelSmall?.copyWith(
-                    fontSize: 9,
-                    color: isActive
-                        ? Colors.white
-                        : Colors.white.withValues(alpha: 0.65),
-                    fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
+                const SizedBox(height: 4),
+                AnimatedDefaultTextStyle(
+                  duration: _duration,
+                  curve: Curves.easeOutCubic,
+                  style: theme.textTheme.labelMedium?.copyWith(
+                        fontSize: isActive ? 11 : 10,
+                        fontWeight:
+                            isActive ? FontWeight.w700 : FontWeight.w500,
+                        color: isActive
+                            ? Colors.white
+                            : Colors.white.withValues(alpha: 0.7),
+                        letterSpacing: 0.1,
+                      ) ??
+                      TextStyle(
+                        fontSize: isActive ? 11 : 10,
+                        fontWeight:
+                            isActive ? FontWeight.w700 : FontWeight.w500,
+                        color: isActive
+                            ? Colors.white
+                            : Colors.white.withValues(alpha: 0.7),
+                      ),
+                  child: Text(
+                    'nav.${item.labelKey}'.tr(),
+                    maxLines: 1,
+                    overflow: TextOverflow.fade,
+                    softWrap: false,
                   ),
                 ),
               ],
@@ -199,7 +251,7 @@ class _FrostedNavBar extends StatelessWidget {
             borderRadius: BorderRadius.circular(24),
           ),
           child: SizedBox(
-            height: 50,
+            height: 66,
             child: Row(
               children: items.asMap().entries.map((entry) {
                 final index = entry.key;
@@ -214,6 +266,77 @@ class _FrostedNavBar extends StatelessWidget {
                 );
               }).toList(),
             ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _GlobalCreditPill extends StatelessWidget {
+  const _GlobalCreditPill({required this.credits, required this.onTap});
+
+  final int credits;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Material(
+      color: Colors.transparent,
+      borderRadius: BorderRadius.circular(22),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(22),
+        child: Ink(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(22),
+            gradient: const LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [Color(0xFF2857FF), Color(0xFF4F46E5)],
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFF2857FF).withOpacity(0.28),
+                blurRadius: 18,
+                offset: const Offset(0, 10),
+              ),
+            ],
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(6),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.white.withOpacity(0.2),
+                ),
+                child: const Icon(Icons.bolt, color: Colors.white, size: 16),
+              ),
+              const SizedBox(width: 10),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Mevcut',
+                    style: theme.textTheme.labelSmall?.copyWith(
+                      color: Colors.white.withOpacity(0.85),
+                      letterSpacing: 0.3,
+                    ),
+                  ),
+                  Text(
+                    '$credits kredi',
+                    style: theme.textTheme.titleSmall?.copyWith(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ],
+              ),
+            ],
           ),
         ),
       ),

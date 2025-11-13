@@ -173,24 +173,13 @@ class _HomeScreenState extends State<HomeScreen> {
           child: CustomScrollView(
             controller: _scrollController,
             slivers: [
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _HomeHero(
-                        subtitle: _homeTr('subtitle'),
-                        credits: _availableCredits,
-                      ),
-                      const SizedBox(height: 20),
-                      _CategoryTabStrip(
-                        categories: videoCategories,
-                        selectedId: _selectedCategoryId,
-                        onSelected: _handleCategorySelect,
-                      ),
-                    ],
-                  ),
+              SliverPersistentHeader(
+                pinned: true,
+                delegate: _HomePinnedHeaderDelegate(
+                  subtitle: _homeTr('subtitle'),
+                  categories: videoCategories,
+                  selectedId: _selectedCategoryId,
+                  onSelected: _handleCategorySelect,
                 ),
               ),
               if (isAll)
@@ -351,110 +340,31 @@ class _HomeScreenState extends State<HomeScreen> {
 class _HomeHero extends StatelessWidget {
   const _HomeHero({
     required this.subtitle,
-    required this.credits,
   });
 
   final String subtitle;
-  final int credits;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return Row(
+    return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Aemove',
-                style: theme.textTheme.titleLarge?.copyWith(
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: -0.2,
-                ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                subtitle,
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: Colors.white70,
-                ),
-              ),
-            ],
+        Text(
+          'Aemove',
+          style: theme.textTheme.titleLarge?.copyWith(
+            fontWeight: FontWeight.w800,
+            letterSpacing: -0.2,
           ),
         ),
-        const SizedBox(width: 12),
-        _EnergyPill(credits: credits),
+        const SizedBox(height: 4),
+        Text(
+          subtitle,
+          style: theme.textTheme.bodySmall?.copyWith(
+            color: Colors.white70,
+          ),
+        ),
       ],
-    );
-  }
-}
-
-class _EnergyPill extends StatelessWidget {
-  const _EnergyPill({required this.credits});
-
-  final int credits;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(20),
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            const Color(0xFF2857FF).withValues(alpha: 0.85),
-            const Color(0xFF4F46E5).withValues(alpha: 0.7),
-          ],
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF2857FF).withValues(alpha: 0.24),
-            blurRadius: 16,
-            offset: const Offset(0, 10),
-          ),
-        ],
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            padding: const EdgeInsets.all(6),
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: Colors.white.withValues(alpha: 0.18),
-            ),
-            child: const Icon(
-              Icons.bolt,
-              color: Colors.white,
-              size: 16,
-            ),
-          ),
-          const SizedBox(width: 10),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'common.credits'.tr(),
-                style: theme.textTheme.labelSmall?.copyWith(
-                  color: Colors.white.withValues(alpha: 0.85),
-                ),
-              ),
-              Text(
-                '$credits',
-                style: theme.textTheme.titleSmall?.copyWith(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
     );
   }
 }
@@ -501,12 +411,6 @@ class _CategoryTabStrip extends StatelessWidget {
               );
             },
           ),
-        ),
-        const SizedBox(height: 8),
-        Divider(
-          color: Colors.white.withValues(alpha: 0.08),
-          thickness: 1,
-          height: 1,
         ),
       ],
     );
@@ -1085,5 +989,69 @@ class _TrendCard extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+class _HomePinnedHeaderDelegate extends SliverPersistentHeaderDelegate {
+  const _HomePinnedHeaderDelegate({
+    required this.subtitle,
+    required this.categories,
+    required this.selectedId,
+    required this.onSelected,
+  });
+
+  final String subtitle;
+  final List<VideoCategory> categories;
+  final String selectedId;
+  final ValueChanged<String> onSelected;
+
+  @override
+  double get minExtent => 156;
+
+  @override
+  double get maxExtent => 156;
+
+  @override
+  Widget build(
+    BuildContext context,
+    double shrinkOffset,
+    bool overlapsContent,
+  ) {
+    return Container(
+      decoration: BoxDecoration(
+        color: const Color(0xFF08112A),
+        boxShadow: overlapsContent
+            ? [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.22),
+                  blurRadius: 16,
+                  offset: const Offset(0, 8),
+                ),
+              ]
+            : null,
+      ),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(20, 12, 20, 12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _HomeHero(subtitle: subtitle),
+            const SizedBox(height: 18),
+            _CategoryTabStrip(
+              categories: categories,
+              selectedId: selectedId,
+              onSelected: onSelected,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  @override
+  bool shouldRebuild(covariant _HomePinnedHeaderDelegate oldDelegate) {
+    return oldDelegate.subtitle != subtitle ||
+        oldDelegate.selectedId != selectedId ||
+        oldDelegate.categories != categories;
   }
 }
