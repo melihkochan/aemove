@@ -1,4 +1,3 @@
-import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -13,57 +12,30 @@ class _ProfileScreenState extends State<ProfileScreen> {
   bool _videoCompleted = true;
   int _selectedTab = 0;
   final int _availableCredits = 24;
-  Locale? _selectedLocale;
-  bool _syncedDeviceLocale = false;
 
   static const _subscriptionPlans = [
-    {'credits': 5, 'price': '₺449,99', 'labelKey': 'profile.planWeekly'},
+    {'credits': 5, 'price': '₺449,99', 'label': 'Starter weekly pack'},
     {
       'credits': 20,
       'price': '₺1.299,99',
-      'labelKey': 'profile.planMonthly',
-      'badgeKey': 'profile.badgeBest',
+      'label': 'Growth monthly plan',
+      'badge': 'Popular',
       'highlight': true,
     },
-    {'credits': 240, 'price': '₺2.999,99', 'labelKey': 'profile.planYearly'},
+    {'credits': 240, 'price': '₺2.999,99', 'label': 'Studio annual plan'},
   ];
 
   static const _creditPackPlans = [
-    {'credits': 5, 'price': '₺599,99', 'labelKey': 'profile.planOnetime'},
-    {'credits': 10, 'price': '₺999,99', 'labelKey': 'profile.planOnetime'},
+    {'credits': 5, 'price': '₺599,99', 'label': '5 credit add-on'},
+    {'credits': 10, 'price': '₺999,99', 'label': '10 credit add-on'},
     {
       'credits': 20,
       'price': '₺2.299,99',
-      'labelKey': 'profile.planOnetime',
-      'badgeKey': 'profile.badgeBest',
+      'label': '20 credit add-on',
+      'badge': 'Best value',
       'highlight': true,
     },
   ];
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    final localization = EasyLocalization.of(context);
-    if (!_syncedDeviceLocale && localization != null) {
-      final supported = localization.supportedLocales;
-      final deviceLocale = localization.deviceLocale;
-      final activeLocale = localization.currentLocale ?? context.locale;
-      Locale target = activeLocale;
-      for (final locale in supported) {
-        if (locale.languageCode == deviceLocale.languageCode) {
-          target = locale;
-          break;
-        }
-      }
-      if (activeLocale.languageCode != target.languageCode) {
-        localization.setLocale(target);
-      }
-      _selectedLocale = target;
-      _syncedDeviceLocale = true;
-    } else {
-      _selectedLocale ??= context.locale;
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -72,15 +44,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final backgroundDark = const Color(0xFF040814);
     final backgroundDeep = const Color(0xFF071029);
     final plans = _selectedTab == 0 ? _subscriptionPlans : _creditPackPlans;
-    final locale = _selectedLocale ?? context.locale;
-    final locales = context.supportedLocales;
 
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         title: Text(
-          'profile.title'.tr(),
+          'Account',
           style: theme.textTheme.titleLarge?.copyWith(
             fontWeight: FontWeight.w700,
             letterSpacing: -0.2,
@@ -108,37 +78,34 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 accent: accent,
               ),
               const SizedBox(height: 16),
-              _PremiumInfoSection(accent: accent),
+              const _PremiumInfoSection(),
               const SizedBox(height: 16),
-              SizedBox(
-                height: 232,
-                child: ListView.separated(
-                  scrollDirection: Axis.horizontal,
-                  physics: const BouncingScrollPhysics(),
-                  padding: const EdgeInsets.only(right: 4),
-                  itemCount: plans.length,
-                  separatorBuilder: (_, __) => const SizedBox(width: 18),
-                  itemBuilder: (context, index) {
-                    final plan = plans[index];
-                    final credits = plan['credits'] as int;
-                    final price = plan['price'] as String;
-                    final labelKey = plan['labelKey'] as String;
-                    final badgeKey = plan['badgeKey'] as String?;
-                    final highlight = plan['highlight'] == true;
-                    final cardWidth = highlight ? 240.0 : 220.0;
-                    return SizedBox(
-                      width: cardWidth,
-                      child: _CreditPlanCard(
-                        credits: credits,
-                        price: price,
-                        label: tr(labelKey),
-                        badge: badgeKey == null ? null : tr(badgeKey),
-                        highlight: highlight,
-                        accent: accent,
-                      ),
-                    );
-                  },
+              GridView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: plans.length,
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 3,
+                  mainAxisSpacing: 12,
+                  crossAxisSpacing: 12,
+                  childAspectRatio: 0.8,
                 ),
+                itemBuilder: (context, index) {
+                  final plan = plans[index];
+                  final credits = plan['credits'] as int;
+                  final price = plan['price'] as String;
+                  final label = plan['label'] as String;
+                  final badge = plan['badge'] as String?;
+                  final highlight = plan['highlight'] == true;
+                  return _CreditPlanCard(
+                    credits: credits,
+                    price: price,
+                    label: label,
+                    badge: badge,
+                    highlight: highlight,
+                    accent: accent,
+                  );
+                },
               ),
               const SizedBox(height: 24),
               OutlinedButton.icon(
@@ -148,7 +115,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   color: accent,
                 ),
                 label: Text(
-                  'profile.restore'.tr(),
+                  'Restore purchases',
                   style: TextStyle(color: accent),
                 ),
                 style: OutlinedButton.styleFrom(
@@ -163,52 +130,42 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
               ),
               const SizedBox(height: 28),
-              _LanguagePreferenceCard(
-                title: 'profile.languageTitle'.tr(),
-                description: 'profile.languageDescription'.tr(),
-                locales: locales,
-                selectedLocale: locale,
-                onLocaleSelected: (selected) {
-                  setState(() => _selectedLocale = selected);
-                  context.setLocale(selected);
-                },
-                accent: accent,
-              ),
+              _PlanSummaryCard(accent: accent),
               const SizedBox(height: 32),
               _QuickActionTile(
                 icon: Icons.star,
-                title: 'profile.rate'.tr(),
-                subtitle: 'profile.rateSubtitle'.tr(),
+                title: 'Rate the app',
+                subtitle: 'Leave a review to support updates.',
                 onTap: () {},
                 accent: accent,
               ),
               _QuickActionTile(
                 icon: Icons.chat_bubble_outline,
-                title: 'profile.featureRequests'.tr(),
-                subtitle: 'profile.featureSubtitle'.tr(),
+                title: 'Feature requests',
+                subtitle: 'Tell us what you want to see next.',
                 onTap: () {},
                 accent: accent,
               ),
               _ToggleTile(
                 icon: Icons.calendar_today_outlined,
-                title: 'profile.weeklyReminders'.tr(),
-                subtitle: 'profile.weeklySubtitle'.tr(),
+                title: 'Weekly reminders',
+                subtitle: 'Receive tips and best practices.',
                 value: _weeklyReminders,
                 onChanged: (value) => setState(() => _weeklyReminders = value),
                 accent: accent,
               ),
               _ToggleTile(
                 icon: Icons.check_circle_outline,
-                title: 'profile.videoCompleted'.tr(),
-                subtitle: 'profile.videoSubtitle'.tr(),
+                title: 'Video completed alerts',
+                subtitle: 'Get notified when renders finish.',
                 value: _videoCompleted,
                 onChanged: (value) => setState(() => _videoCompleted = value),
                 accent: accent,
               ),
               _QuickActionTile(
                 icon: Icons.mail_outline,
-                title: 'profile.contactSupport'.tr(),
-                subtitle: 'profile.contactSubtitle'.tr(),
+                title: 'Contact support',
+                subtitle: 'Reach out for technical help.',
                 onTap: () {},
                 accent: accent,
               ),
@@ -237,108 +194,165 @@ class _ProfileHeader extends StatelessWidget {
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(28),
         gradient: LinearGradient(
-          colors: [
-            accent.withValues(alpha: 0.25),
-            accent.withValues(alpha: 0.06),
-          ],
+          colors: [accent.withOpacity(0.22), accent.withOpacity(0.08)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+        border: Border.all(color: Colors.white.withOpacity(0.06)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Sahip olduğun krediler',
-            style: theme.textTheme.bodySmall?.copyWith(
-              color: Colors.white70,
-            ),
-          ),
-          const SizedBox(height: 6),
-          Text(
-            'Kredi bakiyen',
-            style: theme.textTheme.titleLarge?.copyWith(
-              fontWeight: FontWeight.w700,
-              letterSpacing: -0.2,
-            ),
-          ),
-          const SizedBox(height: 22),
           Row(
             children: [
               Container(
-                padding: const EdgeInsets.all(14),
+                padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: Colors.white.withValues(alpha: 0.12),
+                  color: Colors.black.withOpacity(0.18),
                 ),
-                child: Icon(Icons.bolt, color: accent, size: 26),
+                child: const Icon(Icons.bolt, color: Colors.white, size: 22),
               ),
-              const SizedBox(width: 18),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      '$credits',
-                      style: theme.textTheme.displaySmall?.copyWith(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: -0.8,
-                      ),
+              const SizedBox(width: 16),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '$credits',
+                    style: theme.textTheme.displaySmall?.copyWith(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: -0.6,
                     ),
-                    const SizedBox(height: 6),
-                    Text(
-                      'Kullanabileceğin toplam kredi',
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: Colors.white60,
-                      ),
+                  ),
+                  Text(
+                    'credits available',
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: Colors.white70,
                     ),
-                  ],
+                  ),
+                ],
+              ),
+              const Spacer(),
+            ],
+          ),
+          const SizedBox(height: 20),
+          Row(
+            children: [
+              Icon(Icons.info_outline, color: Colors.white54, size: 18),
+              const SizedBox(width: 8),
+              Text(
+                'Video generation costs vary by model.',
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: Colors.white70,
+                  fontWeight: FontWeight.w500,
                 ),
               ),
-              FilledButton.icon(
-                onPressed: () {},
-                icon: const Icon(Icons.add, size: 18),
-                label: const Text('Kredi yükle'),
-                style: FilledButton.styleFrom(
-                  backgroundColor: Colors.white,
-                  foregroundColor: accent,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 18,
-                    vertical: 12,
-                  ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(18),
-                  ),
-                ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Wrap(
+            spacing: 12,
+            runSpacing: 10,
+            children: const [
+              _PlanPill(label: 'Plan: Free', active: true),
+              _PlanPill(label: 'Upgrade to Pro', active: false),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _PlanPill extends StatelessWidget {
+  const _PlanPill({required this.label, required this.active});
+
+  final String label;
+  final bool active;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
+        color: active
+            ? Colors.white.withOpacity(0.16)
+            : Colors.white.withOpacity(0.06),
+      ),
+      child: Text(
+        label,
+        style: Theme.of(context).textTheme.labelLarge?.copyWith(
+              color: Colors.white,
+              fontWeight: active ? FontWeight.w700 : FontWeight.w500,
+            ),
+      ),
+    );
+  }
+}
+
+class _PlanSummaryCard extends StatelessWidget {
+  const _PlanSummaryCard({required this.accent});
+
+  final Color accent;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Container(
+      padding: const EdgeInsets.all(22),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(28),
+        color: Colors.white.withOpacity(0.02),
+        border: Border.all(color: Colors.white.withOpacity(0.05)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: const [
+              _PlanOptionTile(
+                title: 'Free',
+                subtitle: '8 credits per week',
+                highlighted: true,
+              ),
+              SizedBox(width: 12),
+              _PlanOptionTile(
+                title: 'Premium',
+                subtitle: '100 credits per month',
+                highlighted: false,
               ),
             ],
           ),
           const SizedBox(height: 20),
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(20),
-              color: Colors.black.withOpacity(0.12),
+              gradient: LinearGradient(
+                colors: [
+                  accent.withOpacity(0.24),
+                  accent.withOpacity(0.08),
+                ],
+              ),
             ),
             child: Row(
               children: [
-                Icon(Icons.schedule, color: Colors.white54, size: 18),
-                const SizedBox(width: 10),
+                Icon(Icons.schedule, color: Colors.white.withOpacity(0.9)),
+                const SizedBox(width: 12),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Bir sonraki yenileme',
-                        style: theme.textTheme.labelSmall?.copyWith(
-                          color: Colors.white60,
+                        'Next reload',
+                        style: theme.textTheme.labelMedium?.copyWith(
+                          color: Colors.white70,
                         ),
                       ),
-                      const SizedBox(height: 2),
                       Text(
-                        '10 Aralık 2025',
+                        'December 10, 2025',
                         style: theme.textTheme.bodyMedium?.copyWith(
                           color: Colors.white,
                           fontWeight: FontWeight.w600,
@@ -350,9 +364,9 @@ class _ProfileHeader extends StatelessWidget {
                 TextButton(
                   onPressed: () {},
                   style: TextButton.styleFrom(
-                    foregroundColor: accent,
+                    foregroundColor: Colors.white,
                   ),
-                  child: const Text('Detay'),
+                  child: const Text('See history'),
                 ),
               ],
             ),
@@ -363,10 +377,60 @@ class _ProfileHeader extends StatelessWidget {
   }
 }
 
-class _PremiumInfoSection extends StatelessWidget {
-  const _PremiumInfoSection({required this.accent});
+class _PlanOptionTile extends StatelessWidget {
+  const _PlanOptionTile({
+    required this.title,
+    required this.subtitle,
+    required this.highlighted,
+  });
 
-  final Color accent;
+  final String title;
+  final String subtitle;
+  final bool highlighted;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(20),
+          color: highlighted
+              ? Colors.white.withOpacity(0.12)
+              : Colors.white.withOpacity(0.04),
+          border: Border.all(
+            color: highlighted
+                ? Colors.white.withOpacity(0.25)
+                : Colors.white.withOpacity(0.06),
+          ),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              title,
+              style: theme.textTheme.titleMedium?.copyWith(
+                color: Colors.white,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              subtitle,
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: Colors.white70,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _PremiumInfoSection extends StatelessWidget {
+  const _PremiumInfoSection();
 
   @override
   Widget build(BuildContext context) {
@@ -375,33 +439,30 @@ class _PremiumInfoSection extends StatelessWidget {
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(22),
-        color: Colors.white.withValues(alpha: 0.02),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+        color: Colors.white.withOpacity(0.02),
+        border: Border.all(color: Colors.white.withOpacity(0.05)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'profile.premium.title'.tr(),
+            'Why upgrade?',
             style: theme.textTheme.titleLarge?.copyWith(
               fontWeight: FontWeight.w700,
             ),
           ),
           const SizedBox(height: 12),
-          _BenefitRow(
+          const _BenefitRow(
             icon: Icons.refresh,
-            text: 'profile.premium.line1'.tr(),
-            accent: accent,
+            text: 'Faster queue and priority renders',
           ),
-          _BenefitRow(
+          const _BenefitRow(
             icon: Icons.flash_on_outlined,
-            text: 'profile.premium.line2'.tr(),
-            accent: accent,
+            text: 'Higher resolution and longer clips',
           ),
-          _BenefitRow(
+          const _BenefitRow(
             icon: Icons.workspace_premium_outlined,
-            text: 'profile.premium.line3'.tr(),
-            accent: accent,
+            text: 'Access to premium model library',
           ),
         ],
       ),
@@ -410,11 +471,10 @@ class _PremiumInfoSection extends StatelessWidget {
 }
 
 class _BenefitRow extends StatelessWidget {
-  const _BenefitRow({required this.icon, required this.text, required this.accent});
+  const _BenefitRow({required this.icon, required this.text});
 
   final IconData icon;
   final String text;
-  final Color accent;
 
   @override
   Widget build(BuildContext context) {
@@ -427,9 +487,9 @@ class _BenefitRow extends StatelessWidget {
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: accent.withValues(alpha: 0.15),
+              color: Colors.white.withOpacity(0.08),
             ),
-            child: Icon(icon, color: accent),
+            child: Icon(icon, color: Colors.white),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -466,74 +526,91 @@ class _CreditPlanCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final gradient = highlight
-        ? LinearGradient(
-            colors: [accent.withValues(alpha: 0.85), accent.withValues(alpha: 0.5)],
-          )
-        : const LinearGradient(
-            colors: [Color(0xFF0C1425), Color(0xFF0A0F1D)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          );
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(24),
-        gradient: gradient,
+        borderRadius: BorderRadius.circular(22),
+        color: highlight
+            ? accent.withOpacity(0.22)
+            : Colors.white.withOpacity(0.04),
         border: Border.all(
           color: highlight
-              ? accent.withValues(alpha: 0.65)
-              : Colors.white.withValues(alpha: 0.05),
+              ? accent.withOpacity(0.55)
+              : Colors.white.withOpacity(0.05),
         ),
-        boxShadow: highlight
-            ? [
-                BoxShadow(
-                  color: accent.withValues(alpha: 0.32),
-                  blurRadius: 20,
-                  offset: const Offset(0, 12),
-                ),
-              ]
-            : [],
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Stack(
+        clipBehavior: Clip.none,
         children: [
           if (badge != null)
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(14),
-                color: Colors.black.withOpacity(0.12),
-              ),
-              child: Text(
-                badge!.toUpperCase(),
-                style: theme.textTheme.labelSmall?.copyWith(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
+            Positioned(
+              top: -10,
+              left: -2,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(12),
+                  color: highlight
+                      ? Colors.white.withOpacity(0.9)
+                      : Colors.black.withOpacity(0.65),
+                ),
+                child: Text(
+                  badge!.toUpperCase(),
+                  style: theme.textTheme.labelSmall?.copyWith(
+                    color: highlight ? accent : Colors.white,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 0.6,
+                  ),
                 ),
               ),
             ),
-          const SizedBox(height: 12),
-          Text(
-            '$credits kredi',
-            style: theme.textTheme.titleMedium?.copyWith(
-              color: Colors.white,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            price,
-            style: theme.textTheme.bodyMedium?.copyWith(
-              color: Colors.white70,
-            ),
-          ),
-          const SizedBox(height: 12),
-          Text(
-            label,
-            style: theme.textTheme.labelMedium?.copyWith(
-              color: Colors.white.withValues(alpha: 0.92),
-            ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: highlight
+                          ? Colors.white.withOpacity(0.2)
+                          : Colors.white.withOpacity(0.08),
+                    ),
+                    child: Icon(
+                      Icons.bolt,
+                      color: highlight ? Colors.white : accent,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        '$credits credits',
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      Text(
+                        price,
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          color: Colors.white70,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              Text(
+                label,
+                style: theme.textTheme.labelMedium?.copyWith(
+                  color: Colors.white.withOpacity(0.9),
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -659,9 +736,9 @@ class _PlanSegmentedControl extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final entries = [
-      {'index': 0, 'label': 'profile.tabs.subscriptions'.tr()},
-      {'index': 1, 'label': 'profile.tabs.packs'.tr()},
+    final entries = const [
+      {'index': 0, 'label': 'Subscriptions'},
+      {'index': 1, 'label': 'Credit packs'},
     ];
     return Container(
       decoration: BoxDecoration(
@@ -706,126 +783,6 @@ class _PlanSegmentedControl extends StatelessWidget {
   }
 }
 
-class _LanguagePreferenceCard extends StatelessWidget {
-  const _LanguagePreferenceCard({
-    required this.title,
-    required this.description,
-    required this.locales,
-    required this.selectedLocale,
-    required this.onLocaleSelected,
-    required this.accent,
-  });
-
-  final String title;
-  final String description;
-  final List<Locale> locales;
-  final Locale selectedLocale;
-  final ValueChanged<Locale> onLocaleSelected;
-  final Color accent;
-
-  static const Map<String, String> _flags = {'en': '🇺🇸', 'tr': '🇹🇷'};
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(24),
-        color: Colors.white.withValues(alpha: 0.02),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: accent.withOpacity(0.15),
-                ),
-                child: Icon(Icons.language, color: accent),
-              ),
-              const SizedBox(width: 14),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      style: theme.textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      description,
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: Colors.white70,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 18),
-          SizedBox(
-            height: 64,
-            child: ListView.separated(
-              scrollDirection: Axis.horizontal,
-              physics: const BouncingScrollPhysics(),
-              itemCount: locales.length,
-              separatorBuilder: (_, __) => const SizedBox(width: 12),
-              itemBuilder: (context, index) {
-                final locale = locales[index];
-                final code = locale.languageCode;
-                final selected = selectedLocale.languageCode == code;
-                final flag = _flags[code] ?? '🌐';
-                return ChoiceChip(
-                  selected: selected,
-                  onSelected: (_) => onLocaleSelected(locale),
-                  label: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(flag, style: const TextStyle(fontSize: 18)),
-                      const SizedBox(width: 8),
-                      Text('profile.languageOption.$code'.tr()),
-                    ],
-                  ),
-                  labelStyle: theme.textTheme.labelLarge?.copyWith(
-                        color: selected ? Colors.white : Colors.white70,
-                        fontWeight: FontWeight.w600,
-                      ) ??
-                      TextStyle(
-                        color: selected ? Colors.white : Colors.white70,
-                        fontWeight: FontWeight.w600,
-                      ),
-                  selectedColor: accent,
-                  backgroundColor: Colors.white.withOpacity(0.06),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(18),
-                    side: BorderSide(
-                      color: selected
-                          ? Colors.white.withOpacity(0.4)
-                          : Colors.white.withOpacity(0.1),
-                    ),
-                  ),
-                  showCheckmark: false,
-                  labelPadding:
-                      const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                );
-              },
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
 class _FooterLinks extends StatelessWidget {
   const _FooterLinks({required this.accent});
 
@@ -841,7 +798,7 @@ class _FooterLinks extends StatelessWidget {
             TextButton(
               onPressed: () {},
               child: Text(
-                'common.privacyPolicy'.tr(),
+                'Privacy policy',
                 style: TextStyle(color: Colors.white.withOpacity(0.7)),
               ),
             ),
@@ -849,7 +806,7 @@ class _FooterLinks extends StatelessWidget {
             TextButton(
               onPressed: () {},
               child: Text(
-                'common.termsOfService'.tr(),
+                'Terms of service',
                 style: TextStyle(color: Colors.white.withOpacity(0.7)),
               ),
             ),
@@ -860,7 +817,7 @@ class _FooterLinks extends StatelessWidget {
           onPressed: () {},
           icon: const Icon(Icons.delete_outline, color: Colors.redAccent),
           label: Text(
-            'common.deleteAccount'.tr(),
+            'Delete account',
             style: const TextStyle(color: Colors.redAccent),
           ),
         ),
