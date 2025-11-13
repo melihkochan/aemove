@@ -201,8 +201,8 @@ class _HomeScreenState extends State<HomeScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         _SectionHeader(
-                          title: 'Hızlı başlangıçlar',
-                          subtitle: 'Dakikalar içinde hazır senaryoları deneyin',
+                          title: 'Hepsi',
+                          subtitle: 'Platform genelinde öne çıkan içerikler',
                         ),
                         const SizedBox(height: 16),
                         SizedBox(
@@ -242,47 +242,81 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   ),
                 ),
-              SliverToBoxAdapter(
-                key: _categorySectionKey,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const SizedBox(height: 28),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
-                      child: _SectionHeader(
-                        title: 'Hızlı kategoriler',
-                        subtitle:
-                            'Favori tarzını seç, üstteki akış anında yenilensin',
+              if (isAll)
+                SliverToBoxAdapter(
+                  key: _categorySectionKey,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const SizedBox(height: 28),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                        child: _SectionHeader(
+                          title: 'Hızlı kategoriler',
+                          subtitle:
+                              'Favori tarzını seç, üstteki akış anında yenilensin',
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 12),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 12),
-                      child: _CategoryShowcaseGrid(
-                        categories: videoCategories
-                            .where((category) => category.id != 'all')
-                            .toList(),
-                        selectedId: _selectedCategoryId,
-                        onSelected: _handleCategorySelect,
+                      const SizedBox(height: 12),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                        child: _CategoryShowcaseGrid(
+                          categories: videoCategories
+                              .where((category) => category.id != 'all')
+                              .toList(),
+                          selectedId: _selectedCategoryId,
+                          onSelected: _handleCategorySelect,
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
+                )
+              else
+                SliverToBoxAdapter(
+                  key: _categorySectionKey,
+                  child: const SizedBox(height: 20),
                 ),
-              ),
               if (!isAll)
                 SliverToBoxAdapter(
                   child: Padding(
-                    padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
-                    child: _SectionHeader(
-                      title: _categoryTitle(_selectedCategoryId),
-                      subtitle: 'Seçili kategori için önerilen içerikler',
+                    padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+                    child: Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 6,
+                          ),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(14),
+                            color: Colors.white.withValues(alpha: 0.1),
+                          ),
+                          child: Text(
+                            _categoryTitle(_selectedCategoryId),
+                            style: Theme.of(context)
+                                .textTheme
+                                .labelMedium
+                                ?.copyWith(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Text(
+                          'Seçilen kategori için önerilen içerikler',
+                          style: Theme.of(context)
+                              .textTheme
+                              .labelMedium
+                              ?.copyWith(color: Colors.white70),
+                        ),
+                      ],
                     ),
                   ),
                 ),
-              if (feedItems.isNotEmpty)
+              if (feedItems.isNotEmpty && !isAll)
                 SliverPadding(
-                  padding: const EdgeInsets.fromLTRB(20, 18, 20, 0),
+                  padding: const EdgeInsets.fromLTRB(20, 14, 20, 0),
                   sliver: SliverGrid(
                     gridDelegate:
                         const SliverGridDelegateWithFixedCrossAxisCount(
@@ -304,7 +338,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
               SliverToBoxAdapter(
-                child: SizedBox(height: 140 + mediaQuery.padding.bottom),
+                child: SizedBox(height: 110 + mediaQuery.padding.bottom),
               ),
             ],
           ),
@@ -662,25 +696,6 @@ class _FeedCard extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 4,
-                    ),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(12),
-                      color: Colors.white.withValues(alpha: 0.15),
-                    ),
-                    child: Text(
-                      item.id.toUpperCase().replaceAll('-', ' '),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: theme.textTheme.labelSmall?.copyWith(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
                   const Spacer(),
                   Text(
                     item.title,
@@ -910,24 +925,6 @@ class _QuickActionCard extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 5,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.25),
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                    child: Text(
-                      action.badge,
-                      style: theme.textTheme.labelSmall?.copyWith(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                  const Spacer(),
                   Text(
                     action.title,
                     style: theme.textTheme.titleLarge?.copyWith(
