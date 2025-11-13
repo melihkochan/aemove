@@ -252,13 +252,8 @@ class _HomeScreenState extends State<HomeScreen> {
                     )
                   else
                     SliverToBoxAdapter(
-                      key: _categorySectionKey,
-                      child: const SizedBox(height: 20),
-                    ),
-                  if (!isAll)
-                    SliverToBoxAdapter(
                       child: Padding(
-                        padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+                        padding: const EdgeInsets.fromLTRB(20, 10, 20, 0),
                         child: Row(
                           children: [
                             Container(
@@ -690,7 +685,7 @@ class _SectionHeader extends StatelessWidget {
                   letterSpacing: -0.4,
                 ),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 10),
               Text(
                 subtitle,
                 style: theme.textTheme.bodyMedium?.copyWith(
@@ -1034,10 +1029,10 @@ class _HomePinnedHeaderDelegate extends SliverPersistentHeaderDelegate {
   final ValueChanged<String> onSelected;
 
   @override
-  double get minExtent => 96;
+  double get minExtent => 80;
 
   @override
-  double get maxExtent => 112;
+  double get maxExtent => 94;
 
   @override
   Widget build(
@@ -1051,7 +1046,7 @@ class _HomePinnedHeaderDelegate extends SliverPersistentHeaderDelegate {
           bottomRight: Radius.circular(24),
         ),
       ),
-      padding: const EdgeInsets.fromLTRB(20, 14, 20, 16),
+      padding: const EdgeInsets.fromLTRB(20, 10, 20, 14),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

@@ -58,7 +58,7 @@ class _MainShellState extends State<MainShell> {
         children: [
           Positioned.fill(
             child: Padding(
-              padding: const EdgeInsets.only(top: 50),
+              padding: const EdgeInsets.only(top: 46),
               child: IndexedStack(index: _currentIndex, children: _pages),
             ),
           ),
