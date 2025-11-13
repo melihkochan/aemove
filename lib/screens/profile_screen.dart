@@ -12,7 +12,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   bool _videoCompleted = true;
   int _selectedTab = 0;
   int _selectedSubscriptionIndex = 1;
-  int _selectedCreditPackIndex = 0;
+  int _selectedCreditPackIndex = -1;
   final int _availableCredits = 24;
 
   static const _subscriptionPlans = [
@@ -100,7 +100,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
               const SizedBox(height: 20),
               _PlanSegmentedControl(
                 selectedIndex: _selectedTab,
-                onChanged: (value) => setState(() => _selectedTab = value),
+                onChanged: (value) {
+                  setState(() {
+                    _selectedTab = value;
+                    if (value == 1) {
+                      _selectedCreditPackIndex = -1;
+                    }
+                  });
+                },
                 accent: accent,
               ),
               const SizedBox(height: 16),
@@ -130,6 +137,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             highlighted: highlight,
             accent: accent,
             badge: badgeLabel,
+            isDisabled: _selectedTab == 1 && index == _selectedSubscriptionIndex,
             isSelected: index == selectedPlanIndex,
             onTap: () {
               setState(() {
@@ -162,7 +170,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
                 textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 32),
               OutlinedButton.icon(
                 onPressed: () {},
                 icon: Icon(
@@ -184,6 +192,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                 ),
               ),
+              const SizedBox(height: 24),
               _QuickActionTile(
                 icon: Icons.star,
                 title: 'Rate the app',
@@ -654,6 +663,7 @@ class _SelectablePlanCard extends StatelessWidget {
     required this.accent,
     this.highlighted = false,
     this.badge,
+    this.isDisabled = false,
     required this.isSelected,
     required this.onTap,
   });
@@ -662,6 +672,7 @@ class _SelectablePlanCard extends StatelessWidget {
   final Color accent;
   final bool highlighted;
   final String? badge;
+  final bool isDisabled;
   final bool isSelected;
   final VoidCallback onTap;
 
@@ -673,7 +684,7 @@ class _SelectablePlanCard extends StatelessWidget {
             ? accent.withOpacity(0.6)
             : Colors.white.withOpacity(0.07);
     return GestureDetector(
-      onTap: onTap,
+      onTap: isDisabled ? null : onTap,
       child: Stack(
         clipBehavior: Clip.none,
         alignment: Alignment.topCenter,
@@ -683,7 +694,12 @@ class _SelectablePlanCard extends StatelessWidget {
             margin: badge != null ? const EdgeInsets.only(top: 16) : EdgeInsets.zero,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(24),
-              border: Border.all(color: borderColor, width: isSelected ? 2.4 : 1.4),
+              border: Border.all(
+                color: isDisabled
+                    ? Colors.white.withOpacity(0.05)
+                    : borderColor,
+                width: isSelected ? 2.4 : 1.4,
+              ),
               boxShadow: isSelected
                   ? [
                       BoxShadow(
@@ -694,6 +710,12 @@ class _SelectablePlanCard extends StatelessWidget {
                     ]
                   : [],
             ),
+            foregroundDecoration: isDisabled
+                ? BoxDecoration(
+                    color: Colors.black.withOpacity(0.25),
+                    borderRadius: BorderRadius.circular(24),
+                  )
+                : null,
             child: child,
           ),
           if (badge != null)
