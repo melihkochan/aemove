@@ -15,11 +15,14 @@ class _GenerationScreenState extends State<GenerationScreen> {
   late final TextEditingController _promptController;
   String? _selectedImageName;
   bool _isGenerating = false;
+  int _selectedWorkflow = 0;
+  late String _selectedModelId;
 
   @override
   void initState() {
     super.initState();
     _promptController = TextEditingController();
+    _selectedModelId = widget.modelOption.id;
   }
 
   @override
@@ -64,111 +67,45 @@ class _GenerationScreenState extends State<GenerationScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final model = widget.modelOption;
-    final theme = Theme.of(context);
+    final models = modelOptions;
+    final selectedModel = models.firstWhere((m) => m.id == _selectedModelId,
+        orElse: () => widget.modelOption);
 
     return Scaffold(
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
-        title: Text(model.name),
-        actions: [
-          Container(
-            margin: const EdgeInsets.only(right: 16),
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            decoration: BoxDecoration(
-              color: model.primaryColor.withValues(alpha: 0.12),
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Text(
-              model.subtitle,
-              style: theme.textTheme.labelLarge?.copyWith(color: Colors.white),
-            ),
-          ),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        title: const Text('Create'),
+        actions: const [
+          _CreateCreditPill(credits: 24),
+          SizedBox(width: 16),
         ],
       ),
       body: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
-            colors: [Color(0xFF05060A), Color(0xFF101624)],
+            colors: [Color(0xFF121318), Color(0xFF090A0D)],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
           ),
         ),
         child: SafeArea(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.fromLTRB(20, 24, 20, 32),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _ModelHeroCard(model: model),
-                const SizedBox(height: 32),
-                if (model.supportsText) ...[
-                  Text(
-                    'Prompt',
-                    style: theme.textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  TextField(
-                    controller: _promptController,
-                    maxLines: 6,
-                    decoration: const InputDecoration(
-                      hintText:
-                          'Örn. neon ışıklı bir şehirde yağmur altında yürüyen bir samuray',
-                    ),
-                  ),
-                  const SizedBox(height: 28),
-                ],
-                if (model.supportsImage) ...[
-                  Text(
-                    'Referans Görsel',
-                    style: theme.textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  _ImagePickerPlaceholder(
-                    selectedImageName: _selectedImageName,
-                    onTap: _mockSelectImage,
-                  ),
-                  const SizedBox(height: 28),
-                ],
-                Text(
-                  'Model Hakkında',
-                  style: theme.textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Text(model.description, style: theme.textTheme.bodyMedium),
-                const SizedBox(height: 40),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: _isGenerating ? null : _handleGenerate,
-                    child: _isGenerating
-                        ? const SizedBox(
-                            height: 20,
-                            width: 20,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2.6,
-                              valueColor: AlwaysStoppedAnimation<Color>(
-                                Colors.white,
-                              ),
-                            ),
-                          )
-                        : const Text('Generate'),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  'Oluşturma tamamlandığında videonuz My Videos sekmesinde görüntülenecek.',
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: Colors.white60,
-                  ),
-                ),
-              ],
-            ),
+          child: _CreateContent(
+            models: models,
+            selectedModel: selectedModel,
+            selectedWorkflow: _selectedWorkflow,
+            promptController: _promptController,
+            selectedImageName: _selectedImageName,
+            isGenerating: _isGenerating,
+            onWorkflowChanged: (index) {
+              setState(() => _selectedWorkflow = index);
+            },
+            onModelChanged: (modelId) {
+              setState(() => _selectedModelId = modelId);
+            },
+            onSelectImage: _mockSelectImage,
+            onGenerate: _handleGenerate,
           ),
         ),
       ),
@@ -176,8 +113,240 @@ class _GenerationScreenState extends State<GenerationScreen> {
   }
 }
 
-class _ModelHeroCard extends StatelessWidget {
-  const _ModelHeroCard({required this.model});
+class _CreateContent extends StatelessWidget {
+  const _CreateContent({
+    required this.models,
+    required this.selectedModel,
+    required this.selectedWorkflow,
+    required this.promptController,
+    required this.selectedImageName,
+    required this.isGenerating,
+    required this.onWorkflowChanged,
+    required this.onModelChanged,
+    required this.onSelectImage,
+    required this.onGenerate,
+  });
+
+  final List<ModelOption> models;
+  final ModelOption selectedModel;
+  final int selectedWorkflow;
+  final TextEditingController promptController;
+  final String? selectedImageName;
+  final bool isGenerating;
+  final ValueChanged<int> onWorkflowChanged;
+  final ValueChanged<String> onModelChanged;
+  final VoidCallback onSelectImage;
+  final VoidCallback onGenerate;
+
+  static const _workflows = ['Custom Build', 'Effects Library', 'Polaroid Styles'];
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return SingleChildScrollView(
+      padding: const EdgeInsets.fromLTRB(20, 24, 20, 32),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.02),
+              borderRadius: BorderRadius.circular(24),
+              border: Border.all(color: Colors.white.withOpacity(0.05)),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Workflow',
+                    style: theme.textTheme.titleSmall
+                        ?.copyWith(color: Colors.white70)),
+                const SizedBox(height: 12),
+                _SegmentedTabs(
+                  items: _workflows,
+                  selectedIndex: selectedWorkflow,
+                  onChanged: onWorkflowChanged,
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 28),
+          Text(
+            'Select AI model',
+            style: theme.textTheme.titleLarge?.copyWith(
+              fontWeight: FontWeight.w700,
+              letterSpacing: -0.2,
+            ),
+          ),
+          const SizedBox(height: 16),
+          Wrap(
+            spacing: 12,
+            runSpacing: 12,
+            children: models.map((model) {
+              final isSelected = model.id == selectedModel.id;
+              return _ModelChip(
+                model: model,
+                selected: isSelected,
+                onTap: () => onModelChanged(model.id),
+              );
+            }).toList(),
+          ),
+          const SizedBox(height: 18),
+          _ModelDetailCard(model: selectedModel),
+          const SizedBox(height: 28),
+          if (selectedModel.supportsImage) ...[
+            Text(
+              'Reference image',
+              style: theme.textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 12),
+            _ImagePickerCard(
+              selectedImageName: selectedImageName,
+              onTap: onSelectImage,
+            ),
+            const SizedBox(height: 28),
+          ],
+          if (selectedModel.supportsText) ...[
+            Text(
+              'Prompt',
+              style: theme.textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 12),
+            _PromptInput(controller: promptController),
+            const SizedBox(height: 28),
+          ],
+          _GenerateButton(
+            isGenerating: isGenerating,
+            onTap: onGenerate,
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'Oluşturma tamamlandığında videonuz My Videos sekmesinde görüntülenecek.',
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: Colors.white54,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SegmentedTabs extends StatelessWidget {
+  const _SegmentedTabs({
+    required this.items,
+    required this.selectedIndex,
+    required this.onChanged,
+  });
+
+  final List<String> items;
+  final int selectedIndex;
+  final ValueChanged<int> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(18),
+        color: Colors.white.withOpacity(0.03),
+        border: Border.all(color: Colors.white.withOpacity(0.06)),
+      ),
+      child: Row(
+        children: List.generate(items.length, (index) {
+          final isSelected = index == selectedIndex;
+          return Expanded(
+            child: GestureDetector(
+              onTap: () => onChanged(index),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 220),
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(16),
+                  gradient: isSelected
+                      ? const LinearGradient(
+                          colors: [Color(0xFF2C4CFF), Color(0xFF5C7CFF)],
+                        )
+                      : null,
+                ),
+                child: Text(
+                  items[index],
+                  textAlign: TextAlign.center,
+                  style: theme.textTheme.labelLarge?.copyWith(
+                    color: isSelected
+                        ? Colors.white
+                        : Colors.white.withOpacity(0.7),
+                    fontWeight:
+                        isSelected ? FontWeight.w700 : FontWeight.w500,
+                  ),
+                ),
+              ),
+            ),
+          );
+        }),
+      ),
+    );
+  }
+}
+
+class _ModelChip extends StatelessWidget {
+  const _ModelChip({
+    required this.model,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final ModelOption model;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+          color: selected
+              ? Colors.white.withOpacity(0.12)
+              : Colors.white.withOpacity(0.04),
+          border: Border.all(
+            color: selected
+                ? Colors.white.withOpacity(0.25)
+                : Colors.white.withOpacity(0.08),
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              selected ? Icons.check_circle : Icons.radio_button_unchecked,
+              size: 18,
+              color: Colors.white.withOpacity(selected ? 0.95 : 0.55),
+            ),
+            const SizedBox(width: 10),
+            Text(
+              model.name,
+              style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                    color: Colors.white,
+                    fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+                  ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _ModelDetailCard extends StatelessWidget {
+  const _ModelDetailCard({required this.model});
 
   final ModelOption model;
 
@@ -186,95 +355,73 @@ class _ModelHeroCard extends StatelessWidget {
     final theme = Theme.of(context);
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(22),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(26),
+        borderRadius: BorderRadius.circular(24),
         gradient: LinearGradient(
           colors: [
-            model.primaryColor.withValues(alpha: 0.22),
-            model.secondaryColor.withValues(alpha: 0.18),
+            model.primaryColor.withOpacity(0.22),
+            model.secondaryColor.withOpacity(0.16),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
+        border: Border.all(color: Colors.white.withOpacity(0.08)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            model.name,
-            style: theme.textTheme.headlineSmall?.copyWith(
-              color: Colors.white,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            model.subtitle,
-            style: theme.textTheme.titleMedium?.copyWith(color: Colors.white70),
-          ),
-          const SizedBox(height: 16),
-          Wrap(
-            spacing: 12,
-            runSpacing: 12,
+          Row(
             children: [
-              _ChipIcon(
-                icon: Icons.text_fields,
-                label: model.supportsText
-                    ? 'Metin Prompt'
-                    : 'Metin Desteklenmiyor',
-                active: model.supportsText,
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: Colors.black.withOpacity(0.18),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Icon(Icons.auto_awesome,
+                    color: Colors.white.withOpacity(0.9)),
               ),
-              _ChipIcon(
-                icon: Icons.image_outlined,
-                label: model.supportsImage
-                    ? 'Görsel Referans'
-                    : 'Görsel Desteklenmiyor',
-                active: model.supportsImage,
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      model.name,
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    Text(
+                      model.subtitle,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: Colors.white70,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.auto_fix_high,
+                      size: 18, color: Colors.white.withOpacity(0.8)),
+                  const SizedBox(width: 6),
+                  Text('18 credits',
+                      style: theme.textTheme.labelLarge
+                          ?.copyWith(color: Colors.white)),
+                ],
               ),
             ],
           ),
-        ],
-      ),
-    );
-  }
-}
-
-class _ChipIcon extends StatelessWidget {
-  const _ChipIcon({
-    required this.icon,
-    required this.label,
-    required this.active,
-  });
-
-  final IconData icon;
-  final String label;
-  final bool active;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(30),
-        color: active
-            ? Colors.white.withValues(alpha: 0.12)
-            : Colors.white.withValues(alpha: 0.04),
-        border: Border.all(
-          color: Colors.white.withValues(alpha: active ? 0.22 : 0.08),
-        ),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 18, color: Colors.white70),
-          const SizedBox(width: 8),
+          const SizedBox(height: 18),
           Text(
-            label,
-            style: Theme.of(
-              context,
-            ).textTheme.labelLarge?.copyWith(color: Colors.white),
+            model.description,
+            style: theme.textTheme.bodyMedium?.copyWith(
+              color: Colors.white.withOpacity(0.9),
+            ),
           ),
         ],
       ),
@@ -282,11 +429,8 @@ class _ChipIcon extends StatelessWidget {
   }
 }
 
-class _ImagePickerPlaceholder extends StatelessWidget {
-  const _ImagePickerPlaceholder({
-    required this.selectedImageName,
-    required this.onTap,
-  });
+class _ImagePickerCard extends StatelessWidget {
+  const _ImagePickerCard({required this.selectedImageName, required this.onTap});
 
   final String? selectedImageName;
   final VoidCallback onTap;
@@ -294,46 +438,159 @@ class _ImagePickerPlaceholder extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final hasSelection = selectedImageName != null;
-
+    final theme = Theme.of(context);
     return GestureDetector(
       onTap: onTap,
       child: Container(
         width: double.infinity,
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+        padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 26),
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(22),
-          border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
-          color: Colors.white.withValues(alpha: 0.02),
+          borderRadius: BorderRadius.circular(24),
+          color: Colors.white.withOpacity(0.03),
+          border: Border.all(color: Colors.white.withOpacity(0.06)),
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(
               hasSelection
-                  ? Icons.check_circle_outline
-                  : Icons.cloud_upload_outlined,
-              size: 42,
-              color: Colors.white70,
+                  ? Icons.check_circle
+                  : Icons.broken_image_outlined,
+              size: 38,
+              color: Colors.white.withOpacity(0.75),
             ),
             const SizedBox(height: 12),
             Text(
               hasSelection
                   ? selectedImageName!
-                  : 'Görsel seç veya sürükle bırak',
-              textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: Colors.white.withValues(alpha: 0.85),
+                  : 'Upload or drag an image',
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: Colors.white.withOpacity(0.85),
               ),
             ),
-            const SizedBox(height: 6),
+            const SizedBox(height: 4),
             Text(
-              'PNG, JPG • Maks 10 MB',
-              style: Theme.of(
-                context,
-              ).textTheme.bodySmall?.copyWith(color: Colors.white54),
+              'PNG, JPG • Max 10 MB',
+              style:
+                  theme.textTheme.bodySmall?.copyWith(color: Colors.white54),
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _PromptInput extends StatelessWidget {
+  const _PromptInput({required this.controller});
+
+  final TextEditingController controller;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(24),
+        color: Colors.white.withOpacity(0.03),
+        border: Border.all(color: Colors.white.withOpacity(0.05)),
+      ),
+      child: TextField(
+        controller: controller,
+        maxLines: 6,
+        style: theme.textTheme.bodyMedium?.copyWith(color: Colors.white),
+        decoration: InputDecoration(
+          contentPadding: const EdgeInsets.fromLTRB(20, 18, 20, 20),
+          border: InputBorder.none,
+          hintText: 'Describe your scene, actions and mood...',
+          hintStyle: theme.textTheme.bodyMedium?.copyWith(
+            color: Colors.white.withOpacity(0.4),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _GenerateButton extends StatelessWidget {
+  const _GenerateButton({required this.isGenerating, required this.onTap});
+
+  final bool isGenerating;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: double.infinity,
+      child: ElevatedButton(
+        style: ElevatedButton.styleFrom(
+          padding: const EdgeInsets.symmetric(vertical: 18),
+          backgroundColor: const Color(0xFF2C4CFF),
+          foregroundColor: Colors.white,
+          textStyle: const TextStyle(
+            fontWeight: FontWeight.w700,
+            letterSpacing: 0.2,
+          ),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(22),
+          ),
+        ),
+        onPressed: isGenerating ? null : onTap,
+        child: isGenerating
+            ? const SizedBox(
+                height: 22,
+                width: 22,
+                child: CircularProgressIndicator(
+                  strokeWidth: 3,
+                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                ),
+              )
+            : const Text('Generate video'),
+      ),
+    );
+  }
+}
+
+class _CreateCreditPill extends StatelessWidget {
+  const _CreateCreditPill({required this.credits});
+
+  final int credits;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.only(right: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(22),
+        color: const Color(0xFF2957FF),
+        border: Border.all(color: Colors.white.withOpacity(0.1), width: 1),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(6),
+            decoration: const BoxDecoration(
+              shape: BoxShape.circle,
+              color: Color(0x332857FF),
+            ),
+            child: const Icon(Icons.bolt, color: Colors.white, size: 16),
+          ),
+          const SizedBox(width: 10),
+          Text(
+            '$credits',
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w700,
+                ) ??
+                const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w700,
+                  fontSize: 16,
+                ),
+          ),
+        ],
       ),
     );
   }
