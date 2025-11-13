@@ -46,7 +46,7 @@ class _GenerationScreenState extends State<GenerationScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
         content: Text(
-          'Backend yönlendirme katmanı hazır olduğunda bu buton aktive olacak.',
+          'This action will go live once the backend routing layer is connected.',
         ),
       ),
     );
@@ -59,7 +59,7 @@ class _GenerationScreenState extends State<GenerationScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
         content: Text(
-          'Görsel yükleme tasarım aşamasında. Firebase Storage entegrasyonu eklenecek.',
+          'Image upload is still in design. Firebase Storage integration is on the roadmap.',
         ),
       ),
     );
@@ -225,7 +225,7 @@ class _CreateContent extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           Text(
-            'Oluşturma tamamlandığında videonuz My Videos sekmesinde görüntülenecek.',
+            'When the render finishes, your footage will appear inside My Videos.',
             style: theme.textTheme.bodySmall?.copyWith(
               color: Colors.white54,
             ),

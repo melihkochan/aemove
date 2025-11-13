@@ -11,6 +11,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
   bool _weeklyReminders = true;
   bool _videoCompleted = true;
   int _selectedTab = 0;
+  int _selectedSubscriptionIndex = 1;
+  int _selectedCreditPackIndex = 0;
   final int _availableCredits = 24;
 
   static const _subscriptionPlans = [
@@ -44,6 +46,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final backgroundDark = const Color(0xFF040814);
     final backgroundDeep = const Color(0xFF071029);
     final plans = _selectedTab == 0 ? _subscriptionPlans : _creditPackPlans;
+    final selectedPlanIndex =
+        _selectedTab == 0 ? _selectedSubscriptionIndex : _selectedCreditPackIndex;
 
     return Scaffold(
       appBar: AppBar(
@@ -86,9 +90,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 itemCount: plans.length,
                 gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: 3,
-                  mainAxisSpacing: 12,
-                  crossAxisSpacing: 12,
-                  childAspectRatio: 0.8,
+                  mainAxisSpacing: 18,
+                  crossAxisSpacing: 18,
+                  childAspectRatio: 0.62,
                 ),
                 itemBuilder: (context, index) {
                   final plan = plans[index];
@@ -97,15 +101,44 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   final label = plan['label'] as String;
                   final badge = plan['badge'] as String?;
                   final highlight = plan['highlight'] == true;
-                  return _CreditPlanCard(
-                    credits: credits,
-                    price: price,
-                    label: label,
-                    badge: badge,
-                    highlight: highlight,
-                    accent: accent,
-                  );
+                  final badgeLabel = badge != null
+                      ? (highlight ? 'BEST' : badge!.toUpperCase())
+                      : null;
+          return _SelectablePlanCard(
+            highlighted: highlight,
+            accent: accent,
+            badge: badgeLabel,
+            isSelected: index == selectedPlanIndex,
+            onTap: () {
+              setState(() {
+                if (_selectedTab == 0) {
+                  _selectedSubscriptionIndex = index;
+                } else {
+                  _selectedCreditPackIndex = index;
+                }
+              });
+            },
+            child: _CreditPlanCard(
+              width: 126,
+              credits: credits,
+              price: price,
+              label: label,
+              highlight: highlight,
+              accent: accent,
+            ),
+          );
                 },
+              ),
+              const SizedBox(height: 12),
+              Text(
+                _selectedTab == 0
+                    ? 'Choose a subscription to refill credits automatically every month.'
+                    : 'Credit packs are one-time top-ups you can use whenever you need.',
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: Colors.white70,
+                  height: 1.4,
+                ),
+                textAlign: TextAlign.center,
               ),
               const SizedBox(height: 24),
               OutlinedButton.icon(
@@ -506,20 +539,97 @@ class _BenefitRow extends StatelessWidget {
   }
 }
 
+class _SelectablePlanCard extends StatelessWidget {
+  const _SelectablePlanCard({
+    required this.child,
+    required this.accent,
+    this.highlighted = false,
+    this.badge,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  final Widget child;
+  final Color accent;
+  final bool highlighted;
+  final String? badge;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final borderColor = isSelected
+        ? accent.withOpacity(0.85)
+        : highlighted
+            ? accent.withOpacity(0.6)
+            : Colors.white.withOpacity(0.07);
+    return GestureDetector(
+      onTap: onTap,
+      child: Stack(
+        clipBehavior: Clip.none,
+        alignment: Alignment.topCenter,
+        children: [
+          AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            margin: badge != null ? const EdgeInsets.only(top: 16) : EdgeInsets.zero,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(24),
+              border: Border.all(color: borderColor, width: isSelected ? 2.4 : 1.4),
+              boxShadow: isSelected
+                  ? [
+                      BoxShadow(
+                        color: accent.withOpacity(0.35),
+                        blurRadius: 18,
+                        offset: const Offset(0, 10),
+                      ),
+                    ]
+                  : [],
+            ),
+            child: child,
+          ),
+          if (badge != null)
+            Positioned(
+              top: -12,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                decoration: BoxDecoration(
+                  color: highlighted ? Colors.white : Colors.black.withOpacity(0.85),
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(
+                    color:
+                        highlighted ? accent.withOpacity(0.75) : Colors.transparent,
+                  ),
+                ),
+                child: Text(
+                  badge!,
+                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                        color: highlighted ? accent : Colors.white,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 0.5,
+                      ),
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
 class _CreditPlanCard extends StatelessWidget {
   const _CreditPlanCard({
+    required this.width,
     required this.credits,
     required this.price,
     required this.label,
-    this.badge,
     this.highlight = false,
     required this.accent,
   });
 
+  final double width;
   final int credits;
   final String price;
   final String label;
-  final String? badge;
   final bool highlight;
   final Color accent;
 
@@ -527,90 +637,65 @@ class _CreditPlanCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return Container(
-      padding: const EdgeInsets.all(20),
+      width: width,
+      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 20),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(22),
         color: highlight
-            ? accent.withOpacity(0.22)
-            : Colors.white.withOpacity(0.04),
-        border: Border.all(
-          color: highlight
-              ? accent.withOpacity(0.55)
-              : Colors.white.withOpacity(0.05),
-        ),
+            ? Colors.white.withOpacity(0.1)
+            : Colors.white.withOpacity(0.05),
       ),
-      child: Stack(
-        clipBehavior: Clip.none,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          if (badge != null)
-            Positioned(
-              top: -10,
-              left: -2,
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(12),
-                  color: highlight
-                      ? Colors.white.withOpacity(0.9)
-                      : Colors.black.withOpacity(0.65),
-                ),
-                child: Text(
-                  badge!.toUpperCase(),
-                  style: theme.textTheme.labelSmall?.copyWith(
-                    color: highlight ? accent : Colors.white,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 0.6,
-                  ),
-                ),
-              ),
+          Container(
+            width: 64,
+            height: 64,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: highlight
+                  ? Colors.white.withOpacity(0.18)
+                  : Colors.white.withOpacity(0.12),
             ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: highlight
-                          ? Colors.white.withOpacity(0.2)
-                          : Colors.white.withOpacity(0.08),
-                    ),
-                    child: Icon(
-                      Icons.bolt,
-                      color: highlight ? Colors.white : accent,
-                    ),
+            alignment: Alignment.center,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  '$credits',
+                  style: theme.textTheme.titleLarge?.copyWith(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w800,
                   ),
-                  const SizedBox(width: 12),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        '$credits credits',
-                        style: theme.textTheme.titleMedium?.copyWith(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                      Text(
-                        price,
-                        style: theme.textTheme.bodyMedium?.copyWith(
-                          color: Colors.white70,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
-              Text(
-                label,
-                style: theme.textTheme.labelMedium?.copyWith(
-                  color: Colors.white.withOpacity(0.9),
                 ),
-              ),
-            ],
+                Text(
+                  'credits',
+                  style: theme.textTheme.labelSmall?.copyWith(
+                    color: Colors.white70,
+                    letterSpacing: 0.3,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 10),
+          Text(
+            price,
+            style: theme.textTheme.bodyMedium?.copyWith(
+              color: Colors.white70,
+              fontWeight: FontWeight.w600,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 6),
+          Text(
+            label,
+            style: theme.textTheme.labelMedium?.copyWith(
+              color: Colors.white.withOpacity(0.85),
+              fontWeight: FontWeight.w600,
+            ),
+            textAlign: TextAlign.center,
           ),
         ],
       ),

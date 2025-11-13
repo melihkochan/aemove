@@ -69,11 +69,11 @@ class _HomeScreenState extends State<HomeScreen> {
   void _handleTemplateTap(CapabilityTemplate template) {
     final model = _findModel(template.modelId);
     if (model == null) {
-      _showToast('Model bağlantısı hazırlanıyor.');
+      _showToast('Model connection is being prepared.');
       return;
     }
     if (model.isComingSoon) {
-      _showToast('${model.name} yakında kullanılabilir olacak.');
+      _showToast('${model.name} will be available soon.');
       return;
     }
     _openGeneration(context, model);
@@ -126,7 +126,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _handleFeedTap(CategoryFeedItem item) {
-    _showToast('${item.title} • yakında yayınlama akışına bağlanacak.');
+    _showToast('${item.title} • publishing flow support is on the roadmap.');
   }
 
   String _categoryTitle(String id) {
@@ -200,7 +200,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           children: [
                             const SizedBox(height: 12),
                             Text(
-                              'Platform genelinde öne çıkan içerikler',
+                              'Featured content from across the platform',
                               style: theme.textTheme.titleMedium?.copyWith(
                                 fontWeight: FontWeight.w700,
                                 color: Colors.white,
@@ -220,8 +220,8 @@ class _HomeScreenState extends State<HomeScreen> {
                             ),
                             const SizedBox(height: 24),
                             _SectionHeader(
-                              title: 'Trend keşifleri',
-                              subtitle: 'Sık denenen sahne ve modeller',
+                              title: 'Trending discoveries',
+                              subtitle: 'Frequently tested scenes and models',
                             ),
                             const SizedBox(height: 14),
                             SizedBox(
@@ -254,9 +254,9 @@ class _HomeScreenState extends State<HomeScreen> {
                           Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 20),
                             child: _SectionHeader(
-                              title: 'Hızlı kategoriler',
+                              title: 'Quick categories',
                               subtitle:
-                                  'Favori tarzını seç, üstteki akış anında yenilensin',
+                                  'Pick a favorite style to refresh the feed instantly',
                             ),
                           ),
                           const SizedBox(height: 12),
@@ -306,7 +306,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             ),
                             const SizedBox(width: 12),
                             Text(
-                              'Seçilen kategori için önerilen içerikler',
+                              'Recommended content for the selected category',
                               style: Theme.of(context)
                                   .textTheme
                                   .labelMedium
@@ -325,7 +325,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           crossAxisCount: 2,
                           mainAxisSpacing: 18,
                           crossAxisSpacing: 18,
-                          childAspectRatio: 0.72,
+                          childAspectRatio: 0.55,
                         ),
                         delegate: SliverChildBuilderDelegate(
                           (context, index) {

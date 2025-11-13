@@ -65,7 +65,7 @@ class _MainShellState extends State<MainShell> {
             child: SafeArea(
               bottom: false,
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(0, 12, 20, 0),
+                padding: const EdgeInsets.fromLTRB(0, 8, 16, 0),
                 child: _GlobalCreditPill(
                   credits: _availableCredits,
                   onTap: () => setState(() => _currentIndex = 3),
@@ -288,42 +288,49 @@ class _GlobalCreditPill extends StatelessWidget {
     final theme = Theme.of(context);
     return Material(
       color: Colors.transparent,
-      borderRadius: BorderRadius.circular(22),
+      borderRadius: BorderRadius.circular(20),
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(22),
+        borderRadius: BorderRadius.circular(20),
         child: Ink(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(22),
-            color: const Color(0xFF2957FF),
+            borderRadius: BorderRadius.circular(20),
+            color: const Color(0xFF2B4CFF),
             border: Border.all(
-              color: Colors.white.withOpacity(0.1),
-              width: 1,
+              color: Colors.white.withOpacity(0.12),
             ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.18),
+                blurRadius: 10,
+                offset: const Offset(0, 6),
+              ),
+            ],
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
               Container(
-                padding: const EdgeInsets.all(6),
+                padding: const EdgeInsets.all(5),
                 decoration: const BoxDecoration(
                   shape: BoxShape.circle,
-                  color: Color(0x332857FF),
+                  color: Color(0x332B4CFF),
                 ),
                 child: const Icon(Icons.bolt, color: Colors.white, size: 16),
               ),
-              const SizedBox(width: 10),
+              const SizedBox(width: 8),
               Text(
                 '$credits',
                 style: theme.textTheme.titleMedium?.copyWith(
                       color: Colors.white,
-                      fontWeight: FontWeight.w700,
+                      fontWeight: FontWeight.w600,
+                      fontSize: 15,
                     ) ??
                     const TextStyle(
                       color: Colors.white,
-                      fontWeight: FontWeight.w700,
-                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      fontSize: 15,
                     ),
               ),
             ],

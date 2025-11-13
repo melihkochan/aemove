@@ -638,7 +638,7 @@ const capabilityTemplates = [
   CapabilityTemplate(
     id: 'street-vibes',
     title: 'Street Vibes',
-    subtitle: 'Moda odaklı kısa format sahneler ve neon dekorlar.',
+    subtitle: 'Fashion-driven short-form scenes with neon set design.',
     categoryId: 'fashion',
     modelId: 'kling-2-5',
     usageCount: 101,
@@ -649,7 +649,7 @@ const capabilityTemplates = [
   CapabilityTemplate(
     id: 'daily-flow',
     title: 'Daily Flow',
-    subtitle: 'Vlog tarzı yaşam tarzı sekansları ve doğal ışık.',
+    subtitle: 'Lifestyle vlog sequences with natural lighting.',
     categoryId: 'lifestyle',
     modelId: 'fal-svd',
     usageCount: 143,
@@ -660,7 +660,7 @@ const capabilityTemplates = [
   CapabilityTemplate(
     id: 'sport-crush',
     title: 'Sport Crush',
-    subtitle: 'Yüksek tempolu spor sahneleri ve hareket takibi.',
+    subtitle: 'High-energy sports footage with motion tracking.',
     categoryId: 'sport',
     modelId: 'veo-3-1',
     usageCount: 164,
@@ -671,7 +671,7 @@ const capabilityTemplates = [
   CapabilityTemplate(
     id: 'product-orbit',
     title: 'Product Orbit',
-    subtitle: '360° ürün tanıtımları ve ışık geçişleri.',
+    subtitle: '360° product showcases with dynamic lighting transitions.',
     categoryId: 'product',
     modelId: 'kling-2-5',
     usageCount: 118,
@@ -682,7 +682,7 @@ const capabilityTemplates = [
   CapabilityTemplate(
     id: 'world-ride',
     title: 'World Ride',
-    subtitle: 'Seyahat vlogları için panorama ve drone sekansları.',
+    subtitle: 'Panoramic drone sequences tailor-made for travel vlogs.',
     categoryId: 'travel',
     modelId: 'sora-2',
     usageCount: 97,

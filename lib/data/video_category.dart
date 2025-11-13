@@ -21,8 +21,8 @@ class VideoCategory {
 const videoCategories = [
   VideoCategory(
     id: 'all',
-    title: 'Hepsi',
-    subtitle: 'Genel akış',
+    title: 'All',
+    subtitle: 'General feed',
     icon: Icons.auto_awesome,
     color: Color(0xFF2563EB),
     imageUrl:
@@ -30,8 +30,8 @@ const videoCategories = [
   ),
   VideoCategory(
     id: 'popular',
-    title: 'Popüler',
-    subtitle: 'En çok kullanılanlar',
+    title: 'Popular',
+    subtitle: 'Most used',
     icon: Icons.local_fire_department_outlined,
     color: Color(0xFF34D399),
     imageUrl:
@@ -40,7 +40,7 @@ const videoCategories = [
   VideoCategory(
     id: 'cinematic',
     title: 'Cinematic',
-    subtitle: 'Film atmosferi',
+    subtitle: 'Film atmosphere',
     icon: Icons.movie_filter_outlined,
     color: Color(0xFF8B5CF6),
     imageUrl:
@@ -48,8 +48,8 @@ const videoCategories = [
   ),
   VideoCategory(
     id: 'trend',
-    title: 'Trend',
-    subtitle: 'Şu an yükselişte',
+    title: 'Trending',
+    subtitle: 'On the rise',
     icon: Icons.trending_up,
     color: Color(0xFFFB923C),
     imageUrl:
@@ -58,7 +58,7 @@ const videoCategories = [
   VideoCategory(
     id: 'fantasy',
     title: 'Fantasy',
-    subtitle: 'Hayal gücü',
+    subtitle: 'Imagination',
     icon: Icons.auto_fix_high_outlined,
     color: Color(0xFFE879F9),
     imageUrl:
@@ -67,7 +67,7 @@ const videoCategories = [
   VideoCategory(
     id: 'nature',
     title: 'Nature',
-    subtitle: 'Doğal sahneler',
+    subtitle: 'Natural scenes',
     icon: Icons.park_outlined,
     color: Color(0xFF4ADE80),
     imageUrl:
@@ -76,7 +76,7 @@ const videoCategories = [
   VideoCategory(
     id: 'camera',
     title: 'Camera Movements',
-    subtitle: 'Kamera hareketleri',
+    subtitle: 'Dynamic camera moves',
     icon: Icons.video_camera_front_outlined,
     color: Color(0xFF38BDF8),
     imageUrl:
@@ -85,7 +85,7 @@ const videoCategories = [
   VideoCategory(
     id: 'polaroid',
     title: 'Polaroid',
-    subtitle: 'Retro kadrajlar',
+    subtitle: 'Retro framing',
     icon: Icons.photo_camera_back_outlined,
     color: Color(0xFFFACC15),
     imageUrl:
@@ -94,7 +94,7 @@ const videoCategories = [
   VideoCategory(
     id: 'vintage',
     title: 'Vintage',
-    subtitle: 'Analog dokunuş',
+    subtitle: 'Analog touch',
     icon: Icons.camera_roll_outlined,
     color: Color(0xFFF472B6),
     imageUrl:
@@ -103,7 +103,7 @@ const videoCategories = [
   VideoCategory(
     id: 'futuristic',
     title: 'Futuristic',
-    subtitle: 'Bilim kurgu',
+    subtitle: 'Science fiction',
     icon: Icons.satellite_alt_outlined,
     color: Color(0xFF22D3EE),
     imageUrl:
@@ -112,7 +112,7 @@ const videoCategories = [
   VideoCategory(
     id: 'abstract',
     title: 'Abstract',
-    subtitle: 'Duygu ve hareket',
+    subtitle: 'Emotion and motion',
     icon: Icons.blur_circular_outlined,
     color: Color(0xFFf97316),
     imageUrl:
@@ -121,7 +121,7 @@ const videoCategories = [
   VideoCategory(
     id: 'artistic',
     title: 'Artistic',
-    subtitle: 'Sanatsal yorum',
+    subtitle: 'Artistic expression',
     icon: Icons.brush_outlined,
     color: Color(0xFF14B8A6),
     imageUrl:

@@ -9,7 +9,7 @@ class MyVideosScreen extends StatelessWidget {
     final items = _dummyVideos;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Videolarım')),
+      appBar: AppBar(title: const Text('My Videos')),
       body: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
@@ -142,14 +142,14 @@ class _EmptyState extends StatelessWidget {
             ),
             const SizedBox(height: 24),
             Text(
-              'Henüz videon yok',
+              'You have no videos yet',
               style: theme.textTheme.titleLarge?.copyWith(
                 fontWeight: FontWeight.bold,
               ),
             ),
             const SizedBox(height: 8),
             Text(
-              'Bir modeli seç ve üretime başla. Videoların burada listelenecek.',
+              'Pick a model to start generating. Your finished videos will appear here.',
               textAlign: TextAlign.center,
               style: theme.textTheme.bodyMedium?.copyWith(
                 color: Colors.white70,
@@ -181,16 +181,16 @@ class _DummyVideo {
 const _dummyVideos = <_DummyVideo>[
   _DummyVideo(
     title: 'Neon City Chase',
-    description: 'Cyberpunk şehirde yağmur altında geçen bir takip sahnesi.',
+    description: 'A cyberpunk chase sequence unfolding in a rain-soaked neon city.',
     modelName: 'fal.ai SVD',
-    timeAgo: '2 gün önce',
+    timeAgo: '2 days ago',
     accent: Color(0xFF00B4D8),
   ),
   _DummyVideo(
     title: 'Moonlit Forest',
-    description: 'Ay ışığında dans eden ruhların sinematik kavuşması.',
+    description: 'A cinematic reunion of spirits dancing beneath the moonlight.',
     modelName: 'fal.ai SVD',
-    timeAgo: '5 gün önce',
+    timeAgo: '5 days ago',
     accent: Color(0xFF6C63FF),
   ),
 ];
