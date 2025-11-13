@@ -197,7 +197,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const SizedBox(height: 12),
+                            const SizedBox(height: 8),
                             Text(
                               'Featured content from across the platform',
                               style: theme.textTheme.titleMedium?.copyWith(
@@ -205,7 +205,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 color: Colors.white,
                               ),
                             ),
-                            const SizedBox(height: 8),
+                            const SizedBox(height: 6),
                             SizedBox(
                               height: 240,
                               child: _QuickActionCarousel(
@@ -215,28 +215,6 @@ class _HomeScreenState extends State<HomeScreen> {
                                 actionLabel: quickActionCTA,
                                 onTap: _handleQuickAction,
                                 onInteraction: _startQuickActionTicker,
-                              ),
-                            ),
-                            const SizedBox(height: 24),
-                            _SectionHeader(
-                              title: 'Trending discoveries',
-                              subtitle: 'Frequently tested scenes and models',
-                            ),
-                            const SizedBox(height: 14),
-                            SizedBox(
-                              height: 210,
-                              child: ListView.separated(
-                                scrollDirection: Axis.horizontal,
-                                itemCount: homeTrends.length,
-                                separatorBuilder: (_, __) =>
-                                    const SizedBox(width: 16),
-                                itemBuilder: (context, index) {
-                                  final trend = homeTrends[index];
-                                  return _TrendCard(
-                                    trend: trend,
-                                    onTap: () => _handleTrend(trend),
-                                  );
-                                },
                               ),
                             ),
                           ],
@@ -249,16 +227,16 @@ class _HomeScreenState extends State<HomeScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const SizedBox(height: 28),
+                          const SizedBox(height: 10),
                           Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 20),
+                            padding: const EdgeInsets.symmetric(horizontal: 10),
                             child: _SectionHeader(
                               title: 'Quick categories',
                               subtitle:
                                   'Pick a favorite style to refresh the feed instantly',
                             ),
                           ),
-                          const SizedBox(height: 12),
+                          const SizedBox(height: 10),
                           Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 12),
                             child: _CategoryShowcaseGrid(
@@ -317,7 +295,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   if (feedItems.isNotEmpty && !isAll)
                     SliverPadding(
-                      padding: const EdgeInsets.fromLTRB(20, 14, 20, 0),
+                      padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
                       sliver: SliverGrid(
                         gridDelegate:
                             const SliverGridDelegateWithFixedCrossAxisCount(
@@ -1056,10 +1034,10 @@ class _HomePinnedHeaderDelegate extends SliverPersistentHeaderDelegate {
   final ValueChanged<String> onSelected;
 
   @override
-  double get minExtent => 128;
+  double get minExtent => 96;
 
   @override
-  double get maxExtent => 132;
+  double get maxExtent => 112;
 
   @override
   Widget build(
@@ -1073,20 +1051,19 @@ class _HomePinnedHeaderDelegate extends SliverPersistentHeaderDelegate {
           bottomRight: Radius.circular(24),
         ),
       ),
-      padding: const EdgeInsets.fromLTRB(20, 10, 20, 12),
+      padding: const EdgeInsets.fromLTRB(20, 14, 20, 16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const SizedBox(height: 6),
+          const SizedBox(height: 14),
           _CategoryTabStrip(
             categories: categories,
             selectedId: selectedId,
             onSelected: onSelected,
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 10),
           Container(
             height: 1,
-            margin: const EdgeInsets.only(top: 8),
             color: Colors.white.withOpacity(0.08),
           ),
         ],

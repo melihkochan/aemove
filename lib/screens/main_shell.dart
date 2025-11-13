@@ -58,7 +58,7 @@ class _MainShellState extends State<MainShell> {
         children: [
           Positioned.fill(
             child: Padding(
-              padding: const EdgeInsets.only(top: 52),
+              padding: const EdgeInsets.only(top: 50),
               child: IndexedStack(index: _currentIndex, children: _pages),
             ),
           ),
@@ -69,7 +69,7 @@ class _MainShellState extends State<MainShell> {
             child: SafeArea(
               bottom: false,
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
+                padding: const EdgeInsets.fromLTRB(20, 10, 20, 24),
                 child: Row(
                   children: [
                     Column(
@@ -95,6 +95,7 @@ class _MainShellState extends State<MainShell> {
                     _GlobalCreditPill(
                       credits: _availableCredits,
                       onTap: () => setState(() => _currentIndex = 3),
+                      compact: true,
                     ),
                   ],
                 ),
@@ -259,24 +260,21 @@ class _FrostedNavBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final glassStart = Colors.white.withValues(alpha: 0.12);
-    final glassEnd = Colors.white.withValues(alpha: 0.06);
+    final glassStart = Colors.white.withOpacity(0.24);
+    final glassEnd = Colors.white.withOpacity(0.10);
     return ClipRRect(
       borderRadius: BorderRadius.circular(24),
       child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+        filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
         child: DecoratedBox(
           decoration: BoxDecoration(
             gradient: LinearGradient(
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
-              colors: [
-                glassStart.withOpacity(0.55),
-                glassEnd.withOpacity(0.22),
-              ],
+              colors: [glassStart, glassEnd],
             ),
             border: Border.all(
-              color: Colors.white.withOpacity(0.05),
+              color: Colors.white.withOpacity(0.08),
             ),
             borderRadius: BorderRadius.circular(24),
           ),
@@ -304,10 +302,11 @@ class _FrostedNavBar extends StatelessWidget {
 }
 
 class _GlobalCreditPill extends StatelessWidget {
-  const _GlobalCreditPill({required this.credits, required this.onTap});
+  const _GlobalCreditPill({required this.credits, required this.onTap, this.compact = false});
 
   final int credits;
   final VoidCallback onTap;
+  final bool compact;
 
   @override
   Widget build(BuildContext context) {
@@ -318,7 +317,10 @@ class _GlobalCreditPill extends StatelessWidget {
         onTap: onTap,
         borderRadius: BorderRadius.circular(18),
         child: Ink(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          padding: EdgeInsets.symmetric(
+            horizontal: compact ? 12 : 16,
+            vertical: compact ? 8 : 10,
+          ),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(18),
             color: const Color(0xFF4F8BFF),
@@ -335,23 +337,25 @@ class _GlobalCreditPill extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               Container(
-                padding: const EdgeInsets.all(6),
+                padding: EdgeInsets.all(compact ? 5 : 6),
                 decoration: const BoxDecoration(
                   shape: BoxShape.circle,
                   color: Color(0x334F8BFF),
                 ),
-                child: const Icon(Icons.bolt, color: Colors.white, size: 16),
+                child: Icon(Icons.bolt, color: Colors.white, size: compact ? 14 : 16),
               ),
-              const SizedBox(width: 8),
+              SizedBox(width: compact ? 6 : 8),
               Text(
                 '$credits',
                 style: Theme.of(context).textTheme.labelLarge?.copyWith(
                       color: Colors.white,
                       fontWeight: FontWeight.w700,
+                      fontSize: compact ? 13 : null,
                     ) ??
-                    const TextStyle(
+                    TextStyle(
                       color: Colors.white,
                       fontWeight: FontWeight.w700,
+                      fontSize: compact ? 13 : 15,
                     ),
               ),
             ],
