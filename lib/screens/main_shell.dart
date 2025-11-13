@@ -57,9 +57,18 @@ class _MainShellState extends State<MainShell> {
       body: Stack(
         children: [
           Positioned.fill(
-            child: Padding(
-              padding: const EdgeInsets.only(top: 72),
-              child: IndexedStack(index: _currentIndex, children: _pages),
+            child: DecoratedBox(
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [Color(0xFF040814), Color(0xFF060A18)],
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                ),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.only(top: 72),
+                child: IndexedStack(index: _currentIndex, children: _pages),
+              ),
             ),
           ),
           Positioned(
@@ -69,7 +78,7 @@ class _MainShellState extends State<MainShell> {
             child: SafeArea(
               bottom: false,
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
+                padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
                 child: Row(
                   children: [
                     Column(

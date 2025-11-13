@@ -169,7 +169,7 @@ class _HomeScreenState extends State<HomeScreen> {
             child: DecoratedBox(
               decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [Color(0xFF131313), Color(0xFF0C0D11)],
+                  colors: [Color(0xFF040814), Color(0xFF071029)],
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                 ),
@@ -1073,7 +1073,13 @@ class _HomePinnedHeaderDelegate extends SliverPersistentHeaderDelegate {
       BuildContext context, double shrinkOffset, bool overlapsContent) {
     final theme = Theme.of(context);
     return Container(
-      decoration: const BoxDecoration(color: Color(0xFF05060A)),
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          colors: [Color(0xFF040814), Color(0xFF060A18)],
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+        ),
+      ),
       padding: const EdgeInsets.fromLTRB(20, 12, 20, 8),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
