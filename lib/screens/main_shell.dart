@@ -63,7 +63,7 @@ class _MainShellState extends State<MainShell> {
             right: 0,
             bottom: 0,
             child: Padding(
-              padding: EdgeInsets.fromLTRB(12, 0, 12, bottomInset + 12),
+              padding: EdgeInsets.fromLTRB(14, 0, 14, 12 + bottomInset),
               child: _FrostedNavBar(
                 items: _items,
                 currentIndex: _currentIndex,
@@ -110,37 +110,65 @@ class _NavButton extends StatelessWidget {
       onTap: onTap,
       behavior: HitTestBehavior.opaque,
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 6),
+        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 220),
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(20),
-            color: Colors.white.withValues(alpha: isActive ? 0.12 : 0.02),
+            color: Colors.white.withValues(alpha: isActive ? 0.1 : 0.0),
             border: Border.all(
-              color: Colors.white.withValues(alpha: isActive ? 0.18 : 0.06),
+              color: Colors.white.withValues(alpha: isActive ? 0.18 : 0.04),
             ),
           ),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                isActive ? item.activeIcon : item.icon,
-                color: Colors.white,
-                size: 24,
+          child: AnimatedScale(
+            duration: const Duration(milliseconds: 220),
+            scale: isActive ? 1.0 : 0.94,
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 220),
+              decoration: BoxDecoration(
+                gradient: isActive
+                    ? const LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
+                          Color(0x40FFFFFF),
+                          Color(0x10FFFFFF),
+                        ],
+                      )
+                    : null,
+                borderRadius: BorderRadius.circular(16),
               ),
-              const SizedBox(height: 4),
-              Text(
-                'nav.${item.labelKey}'.tr(),
-                maxLines: 1,
-                overflow: TextOverflow.fade,
-                softWrap: false,
-                style: theme.textTheme.labelMedium?.copyWith(
-                  color: Colors.white,
-                  fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
-                ),
+              padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 2),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 180),
+                    switchInCurve: Curves.easeOut,
+                    switchOutCurve: Curves.easeOut,
+                    child: Icon(
+                      isActive ? item.activeIcon : item.icon,
+                      key: ValueKey<bool>(isActive),
+                      color: Colors.white.withValues(alpha: isActive ? 1.0 : 0.72),
+                      size: 20,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    'nav.${item.labelKey}'.tr(),
+                    maxLines: 1,
+                    overflow: TextOverflow.fade,
+                    softWrap: false,
+                    style: theme.textTheme.labelSmall?.copyWith(
+                      fontSize: 10.5,
+                      color: Colors.white.withValues(alpha: isActive ? 1.0 : 0.68),
+                      fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
+                    ),
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
         ),
       ),
@@ -162,46 +190,54 @@ class _FrostedNavBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final glassStart = Colors.white.withValues(alpha: 0.04);
-    final glassEnd = Colors.white.withValues(alpha: 0.01);
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(24),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
-        child: DecoratedBox(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [glassStart, glassEnd],
-            ),
-            borderRadius: BorderRadius.circular(24),
-            border: Border.all(
-              color: Colors.white.withValues(alpha: 0.06),
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.05),
-                blurRadius: 10,
-                offset: const Offset(0, 2),
+    final glassStart = Colors.white.withValues(alpha: 0.01);
+    final glassEnd = Colors.white.withValues(alpha: 0.0);
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 240),
+      curve: Curves.easeOutCubic,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(28),
+        color: Colors.transparent,
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(28),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 28, sigmaY: 28),
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [glassStart, glassEnd],
               ),
-            ],
-          ),
-          child: SizedBox(
-            height: 72,
-            child: Row(
-              children: items.asMap().entries.map((entry) {
-                final index = entry.key;
-                final item = entry.value;
-                return Expanded(
-                  child: _NavButton(
-                    item: item,
-                    isActive: index == currentIndex,
-                    onTap: () => onItemSelected(index),
-                    theme: theme,
-                  ),
-                );
-              }).toList(),
+              borderRadius: BorderRadius.circular(28),
+              border: Border.all(
+                color: Colors.white.withValues(alpha: 0.025),
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.03),
+                  blurRadius: 18,
+                  offset: const Offset(0, 6),
+                ),
+              ],
+            ),
+            child: SizedBox(
+              height: 64,
+              child: Row(
+                children: items.asMap().entries.map((entry) {
+                  final index = entry.key;
+                  final item = entry.value;
+                  return Expanded(
+                    child: _NavButton(
+                      item: item,
+                      isActive: index == currentIndex,
+                      onTap: () => onItemSelected(index),
+                      theme: theme,
+                    ),
+                  );
+                }).toList(),
+              ),
             ),
           ),
         ),

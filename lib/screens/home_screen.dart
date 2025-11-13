@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:collection';
 
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
@@ -56,6 +57,15 @@ class _HomeScreenState extends State<HomeScreen> {
   void _handleCategorySelect(String id) {
     if (_selectedCategoryId == id) return;
     setState(() => _selectedCategoryId = id);
+    if (_quickActionController.hasClients) {
+      _quickActionTimer?.cancel();
+      _quickActionController.animateToPage(
+        0,
+        duration: const Duration(milliseconds: 350),
+        curve: Curves.easeOutCubic,
+      );
+      _startQuickActionTicker();
+    }
   }
 
   ModelOption? _findModel(String modelId) {
@@ -83,6 +93,25 @@ class _HomeScreenState extends State<HomeScreen> {
     _showToast('${action.title} • ${_homeTr('quickActionToast')}');
   }
 
+  String _categoryTitle(String id) {
+    final matched = videoCategories.firstWhere(
+      (category) => category.id == id,
+      orElse: () => videoCategories.first,
+    );
+    return matched.title;
+  }
+
+  List<String> get _selectedEffects {
+    if (_selectedCategoryId == 'all') {
+      return const [];
+    }
+    final effects = categoryEffects[_selectedCategoryId];
+    if (effects == null || effects.isEmpty) {
+      return const [];
+    }
+    return effects.length > 18 ? effects.take(18).toList() : effects;
+  }
+
   void _handleTrend(HomeTrend trend) {
     final model = _findModel(trend.modelId);
     if (model == null) {
@@ -103,6 +132,9 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final mediaQuery = MediaQuery.of(context);
+    final selectedCategoryLabel = _categoryTitle(_selectedCategoryId);
+    final selectedEffects = _selectedEffects;
+    final hasSelectedEffects = selectedEffects.isNotEmpty;
     final quickActionStatus = _homeTr('quickActionsStatus');
     final quickActionCTA = _homeTr('quickActionsPreview');
     return Scaffold(
@@ -127,7 +159,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         subtitle: _homeTr('subtitle'),
                         credits: _availableCredits,
                       ),
-                      const SizedBox(height: 28),
+                      const SizedBox(height: 20),
                       _CategoryTabStrip(
                         categories: videoCategories,
                         selectedId: _selectedCategoryId,
@@ -159,52 +191,14 @@ class _HomeScreenState extends State<HomeScreen> {
                           onInteraction: _startQuickActionTicker,
                         ),
                       ),
-                    ],
-                  ),
-                ),
-              ),
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 32, 20, 0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 12,
-                              vertical: 6,
-                            ),
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(14),
-                              color: Colors.white.withValues(alpha: 0.1),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: const [
-                                Icon(
-                                  Icons.auto_graph_rounded,
-                                  size: 16,
-                                  color: Colors.white,
-                                ),
-                                SizedBox(width: 6),
-                                Text(
-                                  'Trend keşifleri',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          const Spacer(),
-                        ],
+                      const SizedBox(height: 24),
+                      _SectionHeader(
+                        title: 'Trend keşifleri',
+                        subtitle: 'Sık denenen sahne ve modeller',
                       ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 14),
                       SizedBox(
-                        height: 220,
+                        height: 210,
                         child: ListView.separated(
                           scrollDirection: Axis.horizontal,
                           itemCount: homeTrends.length,
@@ -224,22 +218,40 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
               SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 36, 20, 0),
-                  child: _SectionHeader(
-                    title: 'Hızlı kategoriler',
-                    subtitle: 'Favori tarzını seç, üstteki akış anında yenilensin',
-                  ),
-                ),
-              ),
-              SliverPadding(
-                padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
-                sliver: _CategoryShowcaseGrid(
-                  categories: videoCategories
-                      .where((category) => category.id != 'all')
-                      .toList(),
-                  selectedId: _selectedCategoryId,
-                  onSelected: _handleCategorySelect,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const SizedBox(height: 24),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      child: _SectionHeader(
+                        title: 'Hızlı kategoriler',
+                        subtitle:
+                            'Favori tarzını seç, üstteki akış anında yenilensin',
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      child: _CategoryShowcaseGrid(
+                        categories: videoCategories
+                            .where((category) => category.id != 'all')
+                            .toList(),
+                        selectedId: _selectedCategoryId,
+                        onSelected: _handleCategorySelect,
+                      ),
+                    ),
+                    if (hasSelectedEffects) ...[
+                      const SizedBox(height: 18),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                        child: _EffectPanel(
+                          categoryLabel: selectedCategoryLabel,
+                          effects: selectedEffects,
+                        ),
+                      ),
+                    ],
+                  ],
                 ),
               ),
               SliverToBoxAdapter(
@@ -265,37 +277,32 @@ class _HomeHero extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return Column(
+    return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Aemove',
-                    style: theme.textTheme.displaySmall?.copyWith(
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: -0.4,
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    subtitle,
-                    style: theme.textTheme.bodyMedium?.copyWith(
-                      color: Colors.white60,
-                    ),
-                  ),
-                ],
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Aemove',
+                style: theme.textTheme.titleLarge?.copyWith(
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: -0.2,
+                ),
               ),
-            ),
-            const SizedBox(width: 16),
-            _EnergyPill(credits: credits),
-          ],
+              const SizedBox(height: 4),
+              Text(
+                subtitle,
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: Colors.white70,
+                ),
+              ),
+            ],
+          ),
         ),
+        const SizedBox(width: 12),
+        _EnergyPill(credits: credits),
       ],
     );
   }
@@ -310,22 +317,22 @@ class _EnergyPill extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(22),
-        gradient: const LinearGradient(
+        borderRadius: BorderRadius.circular(20),
+        gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            Color(0xFF2857FF),
-            Color(0xFF4F46E5),
+            const Color(0xFF2857FF).withValues(alpha: 0.85),
+            const Color(0xFF4F46E5).withValues(alpha: 0.7),
           ],
         ),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF2857FF).withValues(alpha: 0.3),
-            blurRadius: 22,
-            offset: const Offset(0, 12),
+            color: const Color(0xFF2857FF).withValues(alpha: 0.24),
+            blurRadius: 16,
+            offset: const Offset(0, 10),
           ),
         ],
       ),
@@ -333,30 +340,30 @@ class _EnergyPill extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           Container(
-            padding: const EdgeInsets.all(8),
+            padding: const EdgeInsets.all(6),
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: Colors.white.withValues(alpha: 0.12),
+              color: Colors.white.withValues(alpha: 0.18),
             ),
             child: const Icon(
               Icons.bolt,
               color: Colors.white,
-              size: 20,
+              size: 16,
             ),
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: 10),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
                 'common.credits'.tr(),
                 style: theme.textTheme.labelSmall?.copyWith(
-                  color: Colors.white70,
+                  color: Colors.white.withValues(alpha: 0.85),
                 ),
               ),
               Text(
                 '$credits',
-                style: theme.textTheme.titleMedium?.copyWith(
+                style: theme.textTheme.titleSmall?.copyWith(
                   color: Colors.white,
                   fontWeight: FontWeight.w700,
                 ),
@@ -383,47 +390,41 @@ class _CategoryTabStrip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return SizedBox(
-      height: 46,
-      child: ListView.separated(
-        scrollDirection: Axis.horizontal,
-        itemCount: categories.length,
-        separatorBuilder: (_, __) => const SizedBox(width: 22),
-        itemBuilder: (context, index) {
-          final category = categories[index];
-          final isActive = category.id == selectedId;
-          return GestureDetector(
-            onTap: () => onSelected(category.id),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        SizedBox(
+          height: 44,
+          child: ListView.separated(
+            scrollDirection: Axis.horizontal,
+            itemCount: categories.length,
+            padding: const EdgeInsets.symmetric(horizontal: 8),
+            separatorBuilder: (_, __) => const SizedBox(width: 16),
+            itemBuilder: (context, index) {
+              final category = categories[index];
+              final isActive = category.id == selectedId;
+              return GestureDetector(
+                onTap: () => onSelected(category.id),
+                child: Text(
                   category.title,
                   style: theme.textTheme.titleSmall?.copyWith(
+                    letterSpacing: -0.2,
                     fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
                     color: isActive
                         ? Colors.white
                         : Colors.white.withValues(alpha: 0.65),
                   ),
                 ),
-                const SizedBox(height: 6),
-                AnimatedContainer(
-                  duration: const Duration(milliseconds: 200),
-                  height: 3,
-                  width: isActive ? 28 : 0,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(12),
-                    color: isActive
-                        ? theme.colorScheme.primary
-                        : Colors.transparent,
-                  ),
-                ),
-              ],
-            ),
-          );
-        },
-      ),
+              );
+            },
+          ),
+        ),
+        Divider(
+          color: Colors.white.withValues(alpha: 0.08),
+          thickness: 1,
+          height: 1,
+        ),
+      ],
     );
   }
 }
@@ -441,25 +442,30 @@ class _CategoryShowcaseGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SliverGrid(
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 3,
-        mainAxisSpacing: 18,
+    final mediaQuery = MediaQuery.of(context);
+    final width = mediaQuery.size.width;
+    final crossAxisCount = width < 380 ? 2 : 3;
+    final childAspectRatio = width < 420 ? 0.9 : 1.05;
+    return GridView.builder(
+      physics: const NeverScrollableScrollPhysics(),
+      shrinkWrap: true,
+      padding: EdgeInsets.zero,
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: crossAxisCount,
+        mainAxisSpacing: 16,
         crossAxisSpacing: 16,
-        childAspectRatio: 1.15,
+        childAspectRatio: childAspectRatio,
       ),
-      delegate: SliverChildBuilderDelegate(
-        (context, index) {
-          final category = categories[index];
-          final isActive = selectedId == category.id;
-          return _CategoryShowcaseCard(
-            category: category,
-            isActive: isActive,
-            onTap: () => onSelected(category.id),
-          );
-        },
-        childCount: categories.length,
-      ),
+      itemCount: categories.length,
+      itemBuilder: (context, index) {
+        final category = categories[index];
+        final isActive = selectedId == category.id;
+        return _CategoryShowcaseCard(
+          category: category,
+          isActive: isActive,
+          onTap: () => onSelected(category.id),
+        );
+      },
     );
   }
 }
@@ -484,22 +490,22 @@ class _CategoryShowcaseCard extends StatelessWidget {
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 220),
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(22),
+          borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: Colors.white.withValues(alpha: isActive ? 0.45 : 0.12),
+            color: Colors.white.withValues(alpha: isActive ? 0.4 : 0.1),
             width: isActive ? 2 : 1,
           ),
           boxShadow: [
             BoxShadow(
               color:
-                  (isActive ? baseColor : Colors.black).withValues(alpha: 0.22),
-              blurRadius: isActive ? 18 : 12,
-              offset: const Offset(0, 8),
+                  (isActive ? baseColor : Colors.black).withValues(alpha: 0.18),
+              blurRadius: isActive ? 16 : 10,
+              offset: const Offset(0, 7),
             ),
           ],
         ),
         child: ClipRRect(
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(18),
           child: Stack(
             children: [
               Positioned.fill(
@@ -507,39 +513,39 @@ class _CategoryShowcaseCard extends StatelessWidget {
                   category.imageUrl,
                   fit: BoxFit.cover,
                   errorBuilder: (_, __, ___) =>
-                      Container(color: baseColor.withValues(alpha: 0.4)),
+                      Container(color: baseColor.withValues(alpha: 0.35)),
                 ),
               ),
               Positioned.fill(
                 child: DecoratedBox(
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
                       colors: [
-                        Colors.black.withValues(alpha: 0.1),
-                        baseColor.withValues(alpha: 0.65),
+                        baseColor.withValues(alpha: 0.35),
+                        Colors.black.withValues(alpha: 0.45),
                       ],
                     ),
                   ),
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.all(14),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Container(
-                      width: 34,
-                      height: 34,
+                      width: 30,
+                      height: 30,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        color: Colors.white.withValues(alpha: 0.22),
+                        color: Colors.white.withValues(alpha: 0.2),
                       ),
                       child: Icon(
                         category.icon,
                         color: Colors.white,
-                        size: 18,
+                        size: 16,
                       ),
                     ),
                     const Spacer(),
@@ -547,7 +553,7 @@ class _CategoryShowcaseCard extends StatelessWidget {
                       category.title,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: theme.textTheme.titleMedium?.copyWith(
+                      style: theme.textTheme.titleSmall?.copyWith(
                         color: Colors.white,
                         fontWeight: FontWeight.w700,
                       ),
@@ -557,6 +563,79 @@ class _CategoryShowcaseCard extends StatelessWidget {
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class _EffectPanel extends StatelessWidget {
+  const _EffectPanel({
+    required this.categoryLabel,
+    required this.effects,
+  });
+
+  final String categoryLabel;
+  final List<String> effects;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final title = '$categoryLabel efektleri';
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          title,
+          style: theme.textTheme.titleSmall?.copyWith(
+            color: Colors.white,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        const SizedBox(height: 10),
+        Wrap(
+          spacing: 10,
+          runSpacing: 10,
+          children: effects
+              .map((effect) => _EffectChip(
+                    label: effect,
+                  ))
+              .toList(),
+        ),
+      ],
+    );
+  }
+}
+
+class _EffectChip extends StatelessWidget {
+  const _EffectChip({required this.label});
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(14),
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Color(0x331F7CFF),
+            Color(0x332763FF),
+          ],
+        ),
+        border: Border.all(
+          color: Colors.white.withValues(alpha: 0.12),
+        ),
+      ),
+      child: Text(
+        label,
+        style: theme.textTheme.labelMedium?.copyWith(
+          color: Colors.white,
+          fontWeight: FontWeight.w500,
         ),
       ),
     );
