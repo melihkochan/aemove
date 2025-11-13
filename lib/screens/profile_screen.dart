@@ -16,26 +16,48 @@ class _ProfileScreenState extends State<ProfileScreen> {
   final int _availableCredits = 24;
 
   static const _subscriptionPlans = [
-    {'credits': 5, 'price': '₺449,99', 'label': 'Starter weekly pack'},
+    {
+      'credits': 5,
+      'price': '₺449,99',
+      'label': 'Starter weekly pack',
+      'frequency': 'Weekly',
+    },
     {
       'credits': 20,
       'price': '₺1.299,99',
       'label': 'Growth monthly plan',
       'badge': 'Popular',
       'highlight': true,
+      'frequency': 'Monthly',
     },
-    {'credits': 240, 'price': '₺2.999,99', 'label': 'Studio annual plan'},
+    {
+      'credits': 240,
+      'price': '₺2.999,99',
+      'label': 'Studio annual plan',
+      'frequency': 'Annual',
+    },
   ];
 
   static const _creditPackPlans = [
-    {'credits': 5, 'price': '₺599,99', 'label': '5 credit add-on'},
-    {'credits': 10, 'price': '₺999,99', 'label': '10 credit add-on'},
+    {
+      'credits': 5,
+      'price': '₺599,99',
+      'label': '5 credit add-on',
+      'frequency': 'One-time',
+    },
+    {
+      'credits': 10,
+      'price': '₺999,99',
+      'label': '10 credit add-on',
+      'frequency': 'One-time',
+    },
     {
       'credits': 20,
       'price': '₺2.299,99',
       'label': '20 credit add-on',
       'badge': 'Best value',
       'highlight': true,
+      'frequency': 'One-time',
     },
   ];
 
@@ -82,7 +104,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 accent: accent,
               ),
               const SizedBox(height: 16),
-              const _PremiumInfoSection(),
+              _PlanInfoSection(isSubscription: _selectedTab == 0),
               const SizedBox(height: 16),
               GridView.builder(
                 shrinkWrap: true,
@@ -98,7 +120,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   final plan = plans[index];
                   final credits = plan['credits'] as int;
                   final price = plan['price'] as String;
-                  final label = plan['label'] as String;
+                  final frequency = plan['frequency'] as String?;
                   final badge = plan['badge'] as String?;
                   final highlight = plan['highlight'] == true;
                   final badgeLabel = badge != null
@@ -122,7 +144,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               width: 126,
               credits: credits,
               price: price,
-              label: label,
+              frequency: frequency,
               highlight: highlight,
               accent: accent,
             ),
@@ -462,12 +484,31 @@ class _PlanOptionTile extends StatelessWidget {
   }
 }
 
-class _PremiumInfoSection extends StatelessWidget {
-  const _PremiumInfoSection();
+class _PlanInfoSection extends StatelessWidget {
+  const _PlanInfoSection({required this.isSubscription});
+
+  final bool isSubscription;
+
+  static const _subscriptionBenefits = [
+    (Icons.refresh, 'Credits auto-renew every billing cycle'),
+    (Icons.flash_on_outlined, 'Priority renders and premium quality'),
+    (Icons.workspace_premium_outlined, 'All pro models unlocked instantly'),
+  ];
+
+  static const _creditBenefits = [
+    (Icons.add_circle_outline, 'Top up only when your team needs more'),
+    (Icons.calendar_today_outlined, 'No commitments or auto renewals'),
+    (Icons.compare_arrows_outlined, 'Mix packs across any generation model'),
+  ];
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final benefits = isSubscription ? _subscriptionBenefits : _creditBenefits;
+    final title = isSubscription
+        ? 'Why choose a subscription?'
+        : 'Why choose credit packs?';
+
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -479,24 +520,14 @@ class _PremiumInfoSection extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Why upgrade?',
+            title,
             style: theme.textTheme.titleLarge?.copyWith(
               fontWeight: FontWeight.w700,
             ),
           ),
           const SizedBox(height: 12),
-          const _BenefitRow(
-            icon: Icons.refresh,
-            text: 'Faster queue and priority renders',
-          ),
-          const _BenefitRow(
-            icon: Icons.flash_on_outlined,
-            text: 'Higher resolution and longer clips',
-          ),
-          const _BenefitRow(
-            icon: Icons.workspace_premium_outlined,
-            text: 'Access to premium model library',
-          ),
+          for (final benefit in benefits)
+            _BenefitRow(icon: benefit.$1, text: benefit.$2),
         ],
       ),
     );
@@ -621,7 +652,7 @@ class _CreditPlanCard extends StatelessWidget {
     required this.width,
     required this.credits,
     required this.price,
-    required this.label,
+    this.frequency,
     this.highlight = false,
     required this.accent,
   });
@@ -629,7 +660,7 @@ class _CreditPlanCard extends StatelessWidget {
   final double width;
   final int credits;
   final String price;
-  final String label;
+  final String? frequency;
   final bool highlight;
   final Color accent;
 
@@ -688,15 +719,18 @@ class _CreditPlanCard extends StatelessWidget {
             ),
             textAlign: TextAlign.center,
           ),
-          const SizedBox(height: 6),
-          Text(
-            label,
-            style: theme.textTheme.labelMedium?.copyWith(
-              color: Colors.white.withOpacity(0.85),
-              fontWeight: FontWeight.w600,
+          if (frequency != null) ...[
+            const SizedBox(height: 4),
+            Text(
+              frequency!,
+              style: theme.textTheme.labelSmall?.copyWith(
+                color: Colors.white54,
+                fontWeight: FontWeight.w500,
+                letterSpacing: 0.3,
+              ),
+              textAlign: TextAlign.center,
             ),
-            textAlign: TextAlign.center,
-          ),
+          ],
         ],
       ),
     );
