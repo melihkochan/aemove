@@ -403,12 +403,12 @@ class _CategoryTabStrip extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         SizedBox(
-          height: 34,
+          height: 32,
           child: ListView.separated(
             scrollDirection: Axis.horizontal,
             itemCount: categories.length,
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            separatorBuilder: (_, __) => const SizedBox(width: 18),
+            padding: const EdgeInsets.only(left: 0, right: 16),
+            separatorBuilder: (_, __) => const SizedBox(width: 14),
             itemBuilder: (context, index) {
               final category = categories[index];
               final isActive = category.id == selectedId;
@@ -443,7 +443,7 @@ class _CategoryTabStrip extends StatelessWidget {
                           ),
                       child: Text(category.title),
                     ),
-                    const SizedBox(height: 4),
+                    const SizedBox(height: 2),
                     AnimatedContainer(
                       duration: const Duration(milliseconds: 220),
                       curve: Curves.easeOutCubic,
@@ -713,7 +713,7 @@ class _SectionHeader extends StatelessWidget {
                   letterSpacing: -0.4,
                 ),
               ),
-              const SizedBox(height: 6),
+              const SizedBox(height: 12),
               Text(
                 subtitle,
                 style: theme.textTheme.bodyMedium?.copyWith(
@@ -1059,10 +1059,10 @@ class _HomePinnedHeaderDelegate extends SliverPersistentHeaderDelegate {
   final ValueChanged<String> onSelected;
 
   @override
-  double get minExtent => 156;
+  double get minExtent => 128;
 
   @override
-  double get maxExtent => 156;
+  double get maxExtent => 132;
 
   @override
   Widget build(
@@ -1097,7 +1097,7 @@ class _HomePinnedHeaderDelegate extends SliverPersistentHeaderDelegate {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _HomeHero(subtitle: subtitle),
-            const SizedBox(height: 16),
+            const SizedBox(height: 20),
             _CategoryTabStrip(
               categories: categories,
               selectedId: selectedId,

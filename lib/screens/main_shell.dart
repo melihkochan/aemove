@@ -160,9 +160,10 @@ class _NavButton extends StatelessWidget {
                     shape: BoxShape.circle,
                     gradient: isActive
                         ? LinearGradient(
-                            colors: [accent, accent.withValues(alpha: 0.6)],
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
+                            colors: [
+                              accent,
+                              accent.withValues(alpha: 0.65),
+                            ],
                           )
                         : null,
                     color: isActive
@@ -171,9 +172,9 @@ class _NavButton extends StatelessWidget {
                     boxShadow: isActive
                         ? [
                             BoxShadow(
-                              color: accent.withValues(alpha: 0.3),
-                              blurRadius: 12,
-                              offset: const Offset(0, 6),
+                              color: accent.withValues(alpha: 0.35),
+                              blurRadius: 14,
+                              offset: const Offset(0, 8),
                             ),
                           ]
                         : null,
@@ -194,7 +195,7 @@ class _NavButton extends StatelessWidget {
                             isActive ? FontWeight.w700 : FontWeight.w500,
                         color: isActive
                             ? Colors.white
-                            : Colors.white.withValues(alpha: 0.7),
+                            : Colors.white.withValues(alpha: 0.75),
                         letterSpacing: 0.1,
                       ) ??
                       TextStyle(
@@ -203,7 +204,7 @@ class _NavButton extends StatelessWidget {
                             isActive ? FontWeight.w700 : FontWeight.w500,
                         color: isActive
                             ? Colors.white
-                            : Colors.white.withValues(alpha: 0.7),
+                            : Colors.white.withValues(alpha: 0.75),
                       ),
                   child: Text(
                     'nav.${item.labelKey}'.tr(),
@@ -235,18 +236,21 @@ class _FrostedNavBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final glassStart = Colors.white.withValues(alpha: 0.05);
-    final glassEnd = Colors.white.withValues(alpha: 0.01);
+    final glassStart = Colors.white.withValues(alpha: 0.12);
+    final glassEnd = Colors.white.withValues(alpha: 0.06);
     return ClipRRect(
       borderRadius: BorderRadius.circular(24),
       child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 14, sigmaY: 14),
+        filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
         child: DecoratedBox(
           decoration: BoxDecoration(
             gradient: LinearGradient(
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
               colors: [glassStart, glassEnd],
+            ),
+            border: Border.all(
+              color: Colors.white.withOpacity(0.08),
             ),
             borderRadius: BorderRadius.circular(24),
           ),
