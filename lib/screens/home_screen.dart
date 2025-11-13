@@ -182,6 +182,9 @@ class _HomeScreenState extends State<HomeScreen> {
               child: CustomScrollView(
                 controller: _scrollController,
                 slivers: [
+                  const SliverToBoxAdapter(
+                    child: SizedBox(height: 4),
+                  ),
                   SliverPersistentHeader(
                     pinned: true,
                     delegate: _HomePinnedHeaderDelegate(
@@ -224,7 +227,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   if (isAll)
                     SliverToBoxAdapter(
                       child: Padding(
-                        padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
+                        padding: const EdgeInsets.fromLTRB(20, 6, 20, 0),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -1060,38 +1063,28 @@ class _HomePinnedHeaderDelegate extends SliverPersistentHeaderDelegate {
   final ValueChanged<String> onSelected;
 
   @override
-  double get minExtent => 80;
+  double get minExtent => 88;
 
   @override
-  double get maxExtent => 94;
+  double get maxExtent => 104;
 
   @override
   Widget build(
       BuildContext context, double shrinkOffset, bool overlapsContent) {
     final theme = Theme.of(context);
     return Container(
-      decoration: const BoxDecoration(
-        color: Colors.transparent,
-        borderRadius: BorderRadius.only(
-          bottomLeft: Radius.circular(24),
-          bottomRight: Radius.circular(24),
-        ),
-      ),
-      padding: const EdgeInsets.fromLTRB(20, 10, 20, 14),
+      decoration: const BoxDecoration(color: Color(0xFF05060A)),
+      padding: const EdgeInsets.fromLTRB(20, 12, 20, 8),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const SizedBox(height: 14),
+          const SizedBox(height: 20),
           _CategoryTabStrip(
             categories: categories,
             selectedId: selectedId,
             onSelected: onSelected,
           ),
-          const SizedBox(height: 10),
-          Container(
-            height: 1,
-            color: Colors.white.withOpacity(0.08),
-          ),
+          const SizedBox(height: 8),
         ],
       ),
     );

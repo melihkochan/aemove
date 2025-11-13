@@ -58,7 +58,7 @@ class _MainShellState extends State<MainShell> {
         children: [
           Positioned.fill(
             child: Padding(
-              padding: const EdgeInsets.only(top: 46),
+              padding: const EdgeInsets.only(top: 72),
               child: IndexedStack(index: _currentIndex, children: _pages),
             ),
           ),
@@ -69,7 +69,7 @@ class _MainShellState extends State<MainShell> {
             child: SafeArea(
               bottom: false,
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(20, 10, 20, 24),
+                padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
                 child: Row(
                   children: [
                     Column(
