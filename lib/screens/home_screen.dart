@@ -122,7 +122,7 @@ class _HomeScreenState extends State<HomeScreen> {
     final screenWidth = mediaQuery.size.width;
     final singleColumn = screenWidth < 420;
     final gridCrossAxisCount = singleColumn ? 1 : 2;
-    final gridAspectRatio = singleColumn ? 1.05 : 0.78;
+    final gridAspectRatio = singleColumn ? 0.95 : 0.72;
     final selectedCategoryLabel = 'home.categories.$_selectedCategoryId'.tr();
     final templatesTitle = _selectedCategoryId == 'all'
         ? _homeTr('templatesAllShort')
