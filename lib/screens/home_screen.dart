@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import '../data/home_content.dart';
 import '../data/model_option.dart';
 import '../data/video_category.dart';
-import '../widgets/category_chip.dart';
 import 'generation_screen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -118,11 +117,15 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    final mediaQuery = MediaQuery.of(context);
     final capabilities = _filteredCapabilities;
+    final screenWidth = mediaQuery.size.width;
+    final singleColumn = screenWidth < 420;
+    final gridCrossAxisCount = singleColumn ? 1 : 2;
+    final gridAspectRatio = singleColumn ? 1.05 : 0.78;
     final selectedCategoryLabel = 'home.categories.$_selectedCategoryId'.tr();
     final templatesTitle = _selectedCategoryId == 'all'
-        ? _homeTr('templatesAll')
+        ? _homeTr('templatesAllShort')
         : '$selectedCategoryLabel ${_homeTr('templatesSuffix')}';
     final quickActionStatus = _homeTr('quickActionsStatus');
     final quickActionCTA = _homeTr('quickActionsPreview');
@@ -140,70 +143,30 @@ class _HomeScreenState extends State<HomeScreen> {
             slivers: [
               SliverToBoxAdapter(
                 child: Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
+                  padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      _HeaderBar(
+                      _HomeHero(
                         subtitle: _homeTr('subtitle'),
                         credits: _availableCredits,
                       ),
-                      const SizedBox(height: 24),
-                      Text(
-                        _homeTr('modesTitle'),
-                        style: theme.textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      _ModeScroller(
-                        modes: homeModes,
-                        selectedModeId: _selectedModeId,
-                        onModeSelected: _handleModeTap,
-                        titleBuilder: _modeTitleLabel,
-                        badgeBuilder: _modeBadgeLabel,
+                      const SizedBox(height: 28),
+                      _CategoryTabStrip(
+                        categories: videoCategories.take(6).toList(),
+                        selectedId: _selectedCategoryId,
+                        onSelected: (id) =>
+                            setState(() => _selectedCategoryId = id),
                       ),
                       const SizedBox(height: 24),
-                      Text(
-                        _homeTr('categoriesTitle'),
-                        style: theme.textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      SizedBox(
-                        height: 52,
-                        child: ListView.separated(
-                          scrollDirection: Axis.horizontal,
-                          itemCount: videoCategories.length,
-                          separatorBuilder: (_, __) =>
-                              const SizedBox(width: 12),
-                          itemBuilder: (context, index) {
-                            final category = videoCategories[index];
-                            final isActive = _selectedCategoryId == category.id;
-                            return CategoryChip(
-                              label: 'home.categories.${category.id}'.tr(),
-                              color: category.color,
-                              active: isActive,
-                              onTap: () => setState(
-                                () => _selectedCategoryId = category.id,
-                              ),
-                            );
-                          },
-                        ),
-                      ),
-                      const SizedBox(height: 24),
-                      Text(
-                        templatesTitle,
-                        style: theme.textTheme.displaySmall?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      Text(
-                        _homeTr('templatesDescription'),
-                        style: theme.textTheme.bodyLarge?.copyWith(
-                          color: Colors.white70,
+                      _SectionHeader(
+                        title: templatesTitle,
+                        subtitle: _homeTr('templatesDescription'),
+                        trailing: TextButton(
+                          onPressed: () => setState(
+                            () => _selectedCategoryId = 'all',
+                          ),
+                          child: Text(_homeTr('viewAll')),
                         ),
                       ),
                     ],
@@ -230,13 +193,12 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                       )
                     : SliverGrid(
-                        gridDelegate:
-                            const SliverGridDelegateWithFixedCrossAxisCount(
-                              crossAxisCount: 2,
-                              crossAxisSpacing: 18,
-                              mainAxisSpacing: 18,
-                              childAspectRatio: 0.75,
-                            ),
+                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: gridCrossAxisCount,
+                          crossAxisSpacing: 18,
+                          mainAxisSpacing: 18,
+                          childAspectRatio: gridAspectRatio,
+                        ),
                         delegate: SliverChildBuilderDelegate((context, index) {
                           final template = capabilities[index];
                           final translatedCategory =
@@ -257,21 +219,38 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               SliverToBoxAdapter(
                 child: Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 44, 20, 0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _SectionHeader(
+                        title: _homeTr('modesTitle'),
+                        subtitle: _homeTr('modesDescription'),
+                      ),
+                      const SizedBox(height: 16),
+                      _ModeScroller(
+                        modes: homeModes,
+                        selectedModeId: _selectedModeId,
+                        onModeSelected: _handleModeTap,
+                        titleBuilder: _modeTitleLabel,
+                        badgeBuilder: _modeBadgeLabel,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              SliverToBoxAdapter(
+                child: Padding(
                   padding: const EdgeInsets.fromLTRB(20, 48, 20, 0),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        _homeTr('quickActionsTitle'),
-                        style: theme.textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      Text(
-                        _homeTr('quickActionsDescription'),
-                        style: theme.textTheme.bodyLarge?.copyWith(
-                          color: Colors.white70,
+                      _SectionHeader(
+                        title: _homeTr('quickActionsTitle'),
+                        subtitle: _homeTr('quickActionsDescription'),
+                        trailing: TextButton(
+                          onPressed: () {},
+                          child: Text(_homeTr('quickActionsMore')),
                         ),
                       ),
                       const SizedBox(height: 16),
@@ -299,21 +278,16 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               SliverToBoxAdapter(
                 child: Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 40, 20, 120),
+                  padding: const EdgeInsets.fromLTRB(20, 40, 20, 0),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        _homeTr('trendsTitle'),
-                        style: theme.textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      Text(
-                        _homeTr('trendsDescription'),
-                        style: theme.textTheme.bodyLarge?.copyWith(
-                          color: Colors.white70,
+                      _SectionHeader(
+                        title: _homeTr('trendsTitle'),
+                        subtitle: _homeTr('trendsDescription'),
+                        trailing: TextButton(
+                          onPressed: () {},
+                          child: Text(_homeTr('viewAll')),
                         ),
                       ),
                       const SizedBox(height: 16),
@@ -337,6 +311,9 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
               ),
+              SliverToBoxAdapter(
+                child: SizedBox(height: 80 + mediaQuery.padding.bottom),
+              ),
             ],
           ),
         ),
@@ -345,8 +322,8 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 }
 
-class _HeaderBar extends StatelessWidget {
-  const _HeaderBar({
+class _HomeHero extends StatelessWidget {
+  const _HomeHero({
     required this.subtitle,
     required this.credits,
   });
@@ -556,6 +533,113 @@ class _ModeScroller extends StatelessWidget {
           );
         },
       ),
+    );
+  }
+}
+
+class _CategoryTabStrip extends StatelessWidget {
+  const _CategoryTabStrip({
+    required this.categories,
+    required this.selectedId,
+    required this.onSelected,
+  });
+
+  final List<VideoCategory> categories;
+  final String selectedId;
+  final ValueChanged<String> onSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return SizedBox(
+      height: 46,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        itemCount: categories.length,
+        separatorBuilder: (_, __) => const SizedBox(width: 22),
+        itemBuilder: (context, index) {
+          final category = categories[index];
+          final isActive = category.id == selectedId;
+          return GestureDetector(
+            onTap: () => onSelected(category.id),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  category.title,
+                  style: theme.textTheme.titleSmall?.copyWith(
+                    fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
+                    color: isActive
+                        ? Colors.white
+                        : Colors.white.withValues(alpha: 0.65),
+                  ),
+                ),
+                const SizedBox(height: 6),
+                AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  height: 3,
+                  width: isActive ? 28 : 0,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(12),
+                    color: isActive
+                        ? theme.colorScheme.primary
+                        : Colors.transparent,
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
+
+class _SectionHeader extends StatelessWidget {
+  const _SectionHeader({
+    required this.title,
+    required this.subtitle,
+    this.trailing,
+  });
+
+  final String title;
+  final String subtitle;
+  final Widget? trailing;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: theme.textTheme.headlineSmall?.copyWith(
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: -0.4,
+                ),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                subtitle,
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: Colors.white70,
+                ),
+              ),
+            ],
+          ),
+        ),
+        if (trailing != null)
+          Padding(
+            padding: const EdgeInsets.only(left: 12),
+            child: trailing!,
+          ),
+      ],
     );
   }
 }
