@@ -247,13 +247,18 @@ class _ProfileHeader extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(28),
-        gradient: LinearGradient(
-          colors: [accent.withOpacity(0.22), accent.withOpacity(0.08)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
+        borderRadius: BorderRadius.circular(32),
+        gradient: SweepGradient(
+          center: Alignment.center,
+          startAngle: 0,
+          endAngle: 3.6,
+          colors: [
+            accent.withOpacity(0.25),
+            accent.withOpacity(0.05),
+            accent.withOpacity(0.25),
+          ],
         ),
-        border: Border.all(color: Colors.white.withOpacity(0.06)),
+        border: Border.all(color: Colors.white.withOpacity(0.08)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -261,61 +266,202 @@ class _ProfileHeader extends StatelessWidget {
           Row(
             children: [
               Container(
-                padding: const EdgeInsets.all(12),
+                width: 46,
+                height: 46,
                 decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: Colors.black.withOpacity(0.18),
+                  borderRadius: BorderRadius.circular(18),
+                  gradient: LinearGradient(
+                    colors: [
+                      Colors.white.withOpacity(0.32),
+                      Colors.white.withOpacity(0.08),
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
                 ),
-                child: const Icon(Icons.bolt, color: Colors.white, size: 22),
+                child: const Icon(Icons.bolt_rounded, color: Colors.white, size: 24),
               ),
-              const SizedBox(width: 16),
+              const SizedBox(width: 18),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     '$credits',
-                    style: theme.textTheme.displaySmall?.copyWith(
+                    style: theme.textTheme.displayMedium?.copyWith(
                       color: Colors.white,
-                      fontWeight: FontWeight.w900,
-                      letterSpacing: -0.6,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: -0.8,
                     ),
                   ),
+                  const SizedBox(height: 4),
                   Text(
                     'credits available',
-                    style: theme.textTheme.bodySmall?.copyWith(
+                    style: theme.textTheme.titleSmall?.copyWith(
                       color: Colors.white70,
+                      fontWeight: FontWeight.w500,
+                      letterSpacing: 0.2,
                     ),
                   ),
                 ],
               ),
-              const Spacer(),
             ],
           ),
-          const SizedBox(height: 20),
-          Row(
-            children: [
-              Icon(Icons.info_outline, color: Colors.white54, size: 18),
-              const SizedBox(width: 8),
-              Text(
-                'Video generation costs vary by model.',
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: Colors.white70,
-                  fontWeight: FontWeight.w500,
+          const SizedBox(height: 24),
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(20),
+              color: Colors.black.withOpacity(0.16),
+              border: Border.all(color: Colors.white.withOpacity(0.08)),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(14),
+                    color: Colors.white.withOpacity(0.08),
+                  ),
+                  child: Icon(
+                    Icons.auto_awesome,
+                    color: accent,
+                    size: 22,
+                  ),
                 ),
-              ),
-            ],
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Current tier',
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: Colors.white54,
+                          letterSpacing: 0.2,
+                        ),
+                      ),
+                      Text(
+                        'Free Studio Plan',
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(18),
+                    color: accent.withOpacity(0.18),
+                    border: Border.all(color: accent.withOpacity(0.28)),
+                  ),
+                  child: Text(
+                    'Upgrade',
+                    style: theme.textTheme.labelLarge?.copyWith(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
-          const SizedBox(height: 16),
-          Wrap(
-            spacing: 12,
-            runSpacing: 10,
-            children: const [
-              _PlanPill(label: 'Plan: Free', active: true),
-              _PlanPill(label: 'Upgrade to Pro', active: false),
-            ],
-          ),
+          const SizedBox(height: 18),
+          _InfoStatRow(accent: accent),
         ],
       ),
+    );
+  }
+}
+
+class _InfoStatRow extends StatelessWidget {
+  const _InfoStatRow({required this.accent});
+
+  final Color accent;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Row(
+      children: [
+        Expanded(
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(18),
+              color: Colors.white.withOpacity(0.03),
+              border: Border.all(color: Colors.white.withOpacity(0.05)),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Icon(Icons.schedule_rounded,
+                        color: accent.withOpacity(0.8), size: 18),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Next weekly refresh',
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: Colors.white60,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'In 3 days',
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(18),
+              color: Colors.white.withOpacity(0.03),
+              border: Border.all(color: Colors.white.withOpacity(0.05)),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Icon(Icons.credit_card_rounded,
+                        color: accent.withOpacity(0.8), size: 18),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Average spend',
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: Colors.white60,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  '₺187 / week',
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
