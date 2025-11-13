@@ -223,6 +223,37 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   if (isAll)
                     SliverToBoxAdapter(
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Powered by the latest models',
+                              style: theme.textTheme.titleMedium?.copyWith(
+                                fontWeight: FontWeight.w700,
+                                color: Colors.white,
+                              ),
+                            ),
+                            const SizedBox(height: 10),
+                            SizedBox(
+                              height: 78,
+                              child: ListView.separated(
+                                scrollDirection: Axis.horizontal,
+                                itemCount: modelOptions.length,
+                                separatorBuilder: (_, __) => const SizedBox(width: 12),
+                                itemBuilder: (context, index) {
+                                  final option = modelOptions[index];
+                                  return _TechModelPill(option: option);
+                                },
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  if (isAll)
+                    SliverToBoxAdapter(
                       key: _categorySectionKey,
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1117,4 +1148,54 @@ class _GrainPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
+
+class _TechModelPill extends StatelessWidget {
+  const _TechModelPill({required this.option});
+
+  final ModelOption option;
+
+  @override
+  Widget build(BuildContext context) {
+    final gradient = LinearGradient(
+      colors: [
+        option.primaryColor.withOpacity(0.65),
+        option.secondaryColor.withOpacity(0.28),
+      ],
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+    );
+
+    return Container(
+      width: 150,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(20),
+        gradient: gradient,
+        border: Border.all(color: Colors.white.withOpacity(0.06)),
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(
+            option.name,
+            style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w700,
+                ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            option.subtitle,
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: Colors.white70,
+                ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ],
+      ),
+    );
+  }
 }
