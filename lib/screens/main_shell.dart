@@ -64,12 +64,19 @@ class _MainShellState extends State<MainShell> {
             bottom: 0,
             child: SafeArea(
               top: false,
-              minimum: const EdgeInsets.fromLTRB(16, 0, 16, 18),
-              child: _FrostedNavBar(
-                items: _items,
-                currentIndex: _currentIndex,
-                onItemSelected: (index) =>
-                    setState(() => _currentIndex = index),
+              child: Padding(
+                padding: EdgeInsets.fromLTRB(
+                  16,
+                  0,
+                  16,
+                  bottomInset > 0 ? bottomInset : 6,
+                ),
+                child: _FrostedNavBar(
+                  items: _items,
+                  currentIndex: _currentIndex,
+                  onItemSelected: (index) =>
+                      setState(() => _currentIndex = index),
+                ),
               ),
             ),
           ),
@@ -113,46 +120,30 @@ class _NavButton extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
         child: AnimatedContainer(
-          duration: const Duration(milliseconds: 220),
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+          duration: const Duration(milliseconds: 200),
+          padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 6),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(18),
             color: isActive
-                ? theme.colorScheme.primary.withValues(alpha: 0.18)
-                : Colors.white.withValues(alpha: 0.02),
-            border: Border.all(
-              color: isActive
-                  ? theme.colorScheme.primary.withValues(alpha: 0.3)
-                  : Colors.white.withValues(alpha: 0.03),
-            ),
-            boxShadow: isActive
-                ? [
-                    BoxShadow(
-                      color: theme.colorScheme.primary.withValues(alpha: 0.25),
-                      blurRadius: 18,
-                      offset: const Offset(0, 8),
-                    ),
-                  ]
-                : null,
+                ? theme.colorScheme.primary.withValues(alpha: 0.14)
+                : Colors.white.withValues(alpha: 0.018),
           ),
           child: AnimatedScale(
-            duration: const Duration(milliseconds: 160),
-            scale: isActive ? 1.03 : 0.95,
-            curve: Curves.easeOut,
+            duration: const Duration(milliseconds: 150),
+            scale: isActive ? 1.0 : 0.93,
+            curve: Curves.easeOutCubic,
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 AnimatedSwitcher(
-                  duration: const Duration(milliseconds: 160),
-                  switchInCurve: Curves.easeOut,
-                  switchOutCurve: Curves.easeOut,
+                  duration: const Duration(milliseconds: 140),
                   child: Icon(
                     isActive ? item.activeIcon : item.icon,
                     key: ValueKey<bool>(isActive),
                     color: isActive
                         ? Colors.white
-                        : Colors.white.withValues(alpha: 0.62),
-                    size: 18,
+                        : Colors.white.withValues(alpha: 0.68),
+                    size: 17,
                   ),
                 ),
                 const SizedBox(height: 2),
@@ -162,10 +153,10 @@ class _NavButton extends StatelessWidget {
                   overflow: TextOverflow.fade,
                   softWrap: false,
                   style: theme.textTheme.labelSmall?.copyWith(
-                    fontSize: 9.5,
+                    fontSize: 9,
                     color: isActive
                         ? Colors.white
-                        : Colors.white.withValues(alpha: 0.62),
+                        : Colors.white.withValues(alpha: 0.65),
                     fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
                   ),
                 ),
@@ -192,12 +183,12 @@ class _FrostedNavBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final glassStart = Colors.white.withValues(alpha: 0.004);
-    final glassEnd = Colors.white.withValues(alpha: 0.0);
+    final glassStart = Colors.white.withValues(alpha: 0.05);
+    final glassEnd = Colors.white.withValues(alpha: 0.01);
     return ClipRRect(
-      borderRadius: BorderRadius.circular(26),
+      borderRadius: BorderRadius.circular(24),
       child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 22, sigmaY: 22),
+        filter: ImageFilter.blur(sigmaX: 14, sigmaY: 14),
         child: DecoratedBox(
           decoration: BoxDecoration(
             gradient: LinearGradient(
@@ -205,13 +196,10 @@ class _FrostedNavBar extends StatelessWidget {
               end: Alignment.bottomCenter,
               colors: [glassStart, glassEnd],
             ),
-            borderRadius: BorderRadius.circular(26),
-            border: Border.all(
-              color: Colors.white.withValues(alpha: 0.015),
-            ),
+            borderRadius: BorderRadius.circular(24),
           ),
           child: SizedBox(
-            height: 56,
+            height: 50,
             child: Row(
               children: items.asMap().entries.map((entry) {
                 final index = entry.key;
