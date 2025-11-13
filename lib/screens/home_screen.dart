@@ -156,6 +156,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final mediaQuery = MediaQuery.of(context);
+    final theme = Theme.of(context);
     final quickActionStatus = _homeTr('quickActionsStatus');
     final quickActionCTA = _homeTr('quickActionsPreview');
     final bool isAll = _selectedCategoryId == 'all';
@@ -189,11 +190,14 @@ class _HomeScreenState extends State<HomeScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        _SectionHeader(
-                          title: 'Hepsi',
-                          subtitle: 'Platform genelinde öne çıkan içerikler',
+                        Text(
+                          'Platform genelinde öne çıkan içerikler',
+                          style: theme.textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.w700,
+                            color: Colors.white,
+                          ),
                         ),
-                        const SizedBox(height: 16),
+                        const SizedBox(height: 12),
                         SizedBox(
                           height: 240,
                           child: _QuickActionCarousel(
@@ -411,6 +415,12 @@ class _CategoryTabStrip extends StatelessWidget {
               );
             },
           ),
+        ),
+        const SizedBox(height: 4),
+        Divider(
+          color: Colors.white.withOpacity(0.06),
+          height: 1,
+          thickness: 1,
         ),
       ],
     );
@@ -1031,7 +1041,7 @@ class _HomePinnedHeaderDelegate extends SliverPersistentHeaderDelegate {
             : null,
       ),
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(20, 12, 20, 12),
+        padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [

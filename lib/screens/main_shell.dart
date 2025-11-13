@@ -317,24 +317,17 @@ class _GlobalCreditPill extends StatelessWidget {
                 child: const Icon(Icons.bolt, color: Colors.white, size: 16),
               ),
               const SizedBox(width: 10),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Mevcut',
-                    style: theme.textTheme.labelSmall?.copyWith(
-                      color: Colors.white.withOpacity(0.85),
-                      letterSpacing: 0.3,
-                    ),
-                  ),
-                  Text(
-                    '$credits kredi',
-                    style: theme.textTheme.titleSmall?.copyWith(
+              Text(
+                '$credits kredi',
+                style: theme.textTheme.titleMedium?.copyWith(
                       color: Colors.white,
                       fontWeight: FontWeight.w700,
+                    ) ??
+                    const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 14,
                     ),
-                  ),
-                ],
               ),
             ],
           ),
