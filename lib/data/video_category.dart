@@ -7,6 +7,7 @@ class VideoCategory {
     required this.subtitle,
     required this.icon,
     required this.color,
+    required this.imageUrl,
   });
 
   final String id;
@@ -14,6 +15,7 @@ class VideoCategory {
   final String subtitle;
   final IconData icon;
   final Color color;
+  final String imageUrl;
 }
 
 const videoCategories = [
@@ -23,6 +25,8 @@ const videoCategories = [
     subtitle: 'Genel akış',
     icon: Icons.auto_awesome,
     color: Color(0xFF2563EB),
+    imageUrl:
+        'https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=1200&q=80',
   ),
   VideoCategory(
     id: 'popular',
@@ -30,6 +34,8 @@ const videoCategories = [
     subtitle: 'En çok kullanılanlar',
     icon: Icons.local_fire_department_outlined,
     color: Color(0xFF34D399),
+    imageUrl:
+        'https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?auto=format&fit=crop&w=1200&q=80',
   ),
   VideoCategory(
     id: 'trend',
@@ -37,6 +43,8 @@ const videoCategories = [
     subtitle: 'Şu an yükselişte',
     icon: Icons.trending_up,
     color: Color(0xFFFB923C),
+    imageUrl:
+        'https://images.unsplash.com/photo-1526481280695-3c469928b67b?auto=format&fit=crop&w=1200&q=80',
   ),
   VideoCategory(
     id: 'cinematic',
@@ -44,6 +52,8 @@ const videoCategories = [
     subtitle: 'Film atmosferi',
     icon: Icons.movie_filter_outlined,
     color: Color(0xFF8B5CF6),
+    imageUrl:
+        'https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=1200&q=80',
   ),
   VideoCategory(
     id: 'fantasy',
@@ -51,6 +61,35 @@ const videoCategories = [
     subtitle: 'Hayal gücü',
     icon: Icons.auto_fix_high_outlined,
     color: Color(0xFFE879F9),
+    imageUrl:
+        'https://images.unsplash.com/photo-1476611409377-611b54f68947?auto=format&fit=crop&w=1200&q=80',
+  ),
+  VideoCategory(
+    id: 'nature',
+    title: 'Nature',
+    subtitle: 'Doğal sahneler',
+    icon: Icons.park_outlined,
+    color: Color(0xFF4ADE80),
+    imageUrl:
+        'https://images.unsplash.com/photo-1521293281845-9e0a24a49816?auto=format&fit=crop&w=1200&q=80',
+  ),
+  VideoCategory(
+    id: 'lifestyle',
+    title: 'Lifestyle',
+    subtitle: 'Günlük hikâyeler',
+    icon: Icons.self_improvement_outlined,
+    color: Color(0xFFFB7185),
+    imageUrl:
+        'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=1200&q=80',
+  ),
+  VideoCategory(
+    id: 'fashion',
+    title: 'Fashion',
+    subtitle: 'Moda çekimleri',
+    icon: Icons.checkroom_outlined,
+    color: Color(0xFFD946EF),
+    imageUrl:
+        'https://images.unsplash.com/photo-1503342217505-b0a15ec3261c?auto=format&fit=crop&w=1200&q=80',
   ),
   VideoCategory(
     id: 'camera',
@@ -58,6 +97,26 @@ const videoCategories = [
     subtitle: 'Hareket koreografisi',
     icon: Icons.video_camera_front_outlined,
     color: Color(0xFF38BDF8),
+    imageUrl:
+        'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?auto=format&fit=crop&w=1200&q=80',
+  ),
+  VideoCategory(
+    id: 'sport',
+    title: 'Sport',
+    subtitle: 'Atletik aksiyon',
+    icon: Icons.directions_run_outlined,
+    color: Color(0xFF22D3EE),
+    imageUrl:
+        'https://images.unsplash.com/photo-1502810190503-8303352d0dd0?auto=format&fit=crop&w=1200&q=80',
+  ),
+  VideoCategory(
+    id: 'product',
+    title: 'Product',
+    subtitle: 'Ürün tanıtımı',
+    icon: Icons.shopping_bag_outlined,
+    color: Color(0xFFFBBF24),
+    imageUrl:
+        'https://images.unsplash.com/photo-1556740749-887f6717d7e4?auto=format&fit=crop&w=1200&q=80',
   ),
   VideoCategory(
     id: 'polaroid',
@@ -65,6 +124,8 @@ const videoCategories = [
     subtitle: 'Retro kadrajlar',
     icon: Icons.photo_camera_back_outlined,
     color: Color(0xFFFACC15),
+    imageUrl:
+        'https://images.unsplash.com/photo-1526481280695-3c469928b67b?auto=format&fit=crop&w=1200&q=80',
   ),
   VideoCategory(
     id: 'vintage',
@@ -72,6 +133,8 @@ const videoCategories = [
     subtitle: 'Analog dokunuş',
     icon: Icons.camera_roll_outlined,
     color: Color(0xFFF472B6),
+    imageUrl:
+        'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1200&q=80',
   ),
   VideoCategory(
     id: 'futuristic',
@@ -79,6 +142,17 @@ const videoCategories = [
     subtitle: 'Bilim kurgu',
     icon: Icons.satellite_alt_outlined,
     color: Color(0xFF22D3EE),
+    imageUrl:
+        'https://images.unsplash.com/photo-1504384308090-c894fdcc538d?auto=format&fit=crop&w=1200&q=80',
+  ),
+  VideoCategory(
+    id: 'travel',
+    title: 'Travel',
+    subtitle: 'Seyahat rotaları',
+    icon: Icons.flight_takeoff_outlined,
+    color: Color(0xFF60A5FA),
+    imageUrl:
+        'https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?auto=format&fit=crop&w=1200&q=80',
   ),
   VideoCategory(
     id: 'artistic',
@@ -86,5 +160,7 @@ const videoCategories = [
     subtitle: 'Sanatsal yorum',
     icon: Icons.brush_outlined,
     color: Color(0xFF14B8A6),
+    imageUrl:
+        'https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?auto=format&fit=crop&w=1200&q=80',
   ),
 ];

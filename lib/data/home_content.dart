@@ -211,6 +211,17 @@ const capabilityTemplates = [
         'https://images.unsplash.com/photo-1476611409377-611b54f68947?auto=format&fit=crop&w=1000&q=80',
   ),
   CapabilityTemplate(
+    id: 'nature-lapse',
+    title: 'Nature Lapse',
+    subtitle: 'Dynamic landscape loops with weather-aware motion.',
+    categoryId: 'nature',
+    modelId: 'kling-2-5',
+    usageCount: 84,
+    creditCost: 9,
+    imageUrl:
+        'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1000&q=80',
+  ),
+  CapabilityTemplate(
     id: 'cinematic-pan',
     title: 'Cinematic Pan',
     subtitle: 'Seamless 4K camera pans powered by Veo 3.1.',
@@ -275,5 +286,60 @@ const capabilityTemplates = [
     creditCost: 6,
     imageUrl:
         'https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?auto=format&fit=crop&w=1000&q=80',
+  ),
+  CapabilityTemplate(
+    id: 'street-vibes',
+    title: 'Street Vibes',
+    subtitle: 'Moda odaklı kısa format sahneler ve neon dekorlar.',
+    categoryId: 'fashion',
+    modelId: 'kling-2-5',
+    usageCount: 101,
+    creditCost: 9,
+    imageUrl:
+        'https://images.unsplash.com/photo-1503342217505-b0a15ec3261c?auto=format&fit=crop&w=1000&q=80',
+  ),
+  CapabilityTemplate(
+    id: 'daily-flow',
+    title: 'Daily Flow',
+    subtitle: 'Vlog tarzı yaşam tarzı sekansları ve doğal ışık.',
+    categoryId: 'lifestyle',
+    modelId: 'fal-svd',
+    usageCount: 143,
+    creditCost: 7,
+    imageUrl:
+        'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=1000&q=80',
+  ),
+  CapabilityTemplate(
+    id: 'sport-crush',
+    title: 'Sport Crush',
+    subtitle: 'Yüksek tempolu spor sahneleri ve hareket takibi.',
+    categoryId: 'sport',
+    modelId: 'veo-3-1',
+    usageCount: 164,
+    creditCost: 12,
+    imageUrl:
+        'https://images.unsplash.com/photo-1502810190503-8303352d0dd0?auto=format&fit=crop&w=1000&q=80',
+  ),
+  CapabilityTemplate(
+    id: 'product-orbit',
+    title: 'Product Orbit',
+    subtitle: '360° ürün tanıtımları ve ışık geçişleri.',
+    categoryId: 'product',
+    modelId: 'kling-2-5',
+    usageCount: 118,
+    creditCost: 8,
+    imageUrl:
+        'https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=1000&q=80',
+  ),
+  CapabilityTemplate(
+    id: 'world-ride',
+    title: 'World Ride',
+    subtitle: 'Seyahat vlogları için panorama ve drone sekansları.',
+    categoryId: 'travel',
+    modelId: 'sora-2',
+    usageCount: 97,
+    creditCost: 10,
+    imageUrl:
+        'https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?auto=format&fit=crop&w=1000&q=80',
   ),
 ];

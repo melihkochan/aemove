@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 
@@ -15,18 +17,45 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   String _selectedCategoryId = videoCategories.first.id;
-  String _selectedModeId = homeModes.first.id;
   final int _availableCredits = 24;
+  late final PageController _quickActionController;
+  Timer? _quickActionTimer;
+
+  @override
+  void initState() {
+    super.initState();
+    _quickActionController = PageController(viewportFraction: 1.0);
+    _startQuickActionTicker();
+  }
+
+  void _startQuickActionTicker() {
+    _quickActionTimer?.cancel();
+    if (homeQuickActions.length <= 1) return;
+    _quickActionTimer = Timer.periodic(const Duration(seconds: 4), (_) {
+      if (!_quickActionController.hasClients) return;
+      final currentPage =
+          _quickActionController.page?.round() ?? _quickActionController.initialPage;
+      final nextPage = (currentPage + 1) % homeQuickActions.length;
+      _quickActionController.animateToPage(
+        nextPage,
+        duration: const Duration(milliseconds: 500),
+        curve: Curves.easeOutCubic,
+      );
+    });
+  }
+
+  @override
+  void dispose() {
+    _quickActionTimer?.cancel();
+    _quickActionController.dispose();
+    super.dispose();
+  }
 
   String _homeTr(String key) => 'home.$key'.tr();
 
-  List<CapabilityTemplate> get _filteredCapabilities {
-    if (_selectedCategoryId == 'all') {
-      return capabilityTemplates;
-    }
-    return capabilityTemplates
-        .where((template) => template.categoryId == _selectedCategoryId)
-        .toList();
+  void _handleCategorySelect(String id) {
+    if (_selectedCategoryId == id) return;
+    setState(() => _selectedCategoryId = id);
   }
 
   ModelOption? _findModel(String modelId) {
@@ -44,25 +73,6 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  String _modeTitleLabel(String id) {
-    final key = 'home.modes.$id';
-    final translated = key.tr();
-    if (translated != key) {
-      return translated;
-    }
-    return homeModes.firstWhere((mode) => mode.id == id).title;
-  }
-
-  String? _modeBadgeLabel(String? key) {
-    if (key == null) return null;
-    final badgeKey = 'home.modeBadges.$key';
-    final translated = badgeKey.tr();
-    if (translated != badgeKey) {
-      return translated;
-    }
-    return key.toUpperCase();
-  }
-
   void _showToast(String message) {
     ScaffoldMessenger.of(
       context,
@@ -71,12 +81,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void _handleQuickAction(HomeQuickAction action) {
     _showToast('${action.title} • ${_homeTr('quickActionToast')}');
-  }
-
-  void _handleModeTap(HomeMode mode) {
-    setState(() => _selectedModeId = mode.id);
-    final label = _modeTitleLabel(mode.id);
-    _showToast('home.modeToast'.tr(namedArgs: {'mode': label}));
   }
 
   void _handleTrend(HomeTrend trend) {
@@ -96,37 +100,9 @@ class _HomeScreenState extends State<HomeScreen> {
     _openGeneration(context, model);
   }
 
-  void _handleCapabilityTap(CapabilityTemplate template) {
-    final model = _findModel(template.modelId);
-    if (model == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Model wiring for this template is still in progress.'),
-        ),
-      );
-      return;
-    }
-    if (model.isComingSoon) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('${model.name} will unlock soon.')),
-      );
-      return;
-    }
-    _openGeneration(context, model);
-  }
-
   @override
   Widget build(BuildContext context) {
     final mediaQuery = MediaQuery.of(context);
-    final capabilities = _filteredCapabilities;
-    final screenWidth = mediaQuery.size.width;
-    final singleColumn = screenWidth < 420;
-    final gridCrossAxisCount = singleColumn ? 1 : 2;
-    final gridAspectRatio = singleColumn ? 1.1 : 1.05;
-    final selectedCategoryLabel = 'home.categories.$_selectedCategoryId'.tr();
-    final templatesTitle = _selectedCategoryId == 'all'
-        ? _homeTr('templatesAllShort')
-        : '$selectedCategoryLabel ${_homeTr('templatesSuffix')}';
     final quickActionStatus = _homeTr('quickActionsStatus');
     final quickActionCTA = _homeTr('quickActionsPreview');
     return Scaffold(
@@ -153,87 +129,9 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                       const SizedBox(height: 28),
                       _CategoryTabStrip(
-                        categories: videoCategories.take(6).toList(),
+                        categories: videoCategories,
                         selectedId: _selectedCategoryId,
-                        onSelected: (id) =>
-                            setState(() => _selectedCategoryId = id),
-                      ),
-                      const SizedBox(height: 24),
-                      _SectionHeader(
-                        title: templatesTitle,
-                        subtitle: _homeTr('templatesDescription'),
-                        trailing: TextButton(
-                          onPressed: () => setState(
-                            () => _selectedCategoryId = 'all',
-                          ),
-                          child: Text(_homeTr('viewAll')),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              SliverPadding(
-                padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
-                sliver: capabilities.isEmpty
-                    ? SliverToBoxAdapter(
-                        child: Container(
-                          padding: const EdgeInsets.all(24),
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(24),
-                            border: Border.all(
-                              color: Colors.white.withValues(alpha: 0.08),
-                            ),
-                            color: Colors.white.withValues(alpha: 0.02),
-                          ),
-                          child: Text(
-                            _homeTr('noTemplates'),
-                            style: const TextStyle(color: Colors.white70),
-                          ),
-                        ),
-                      )
-                    : SliverGrid(
-                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: gridCrossAxisCount,
-                          crossAxisSpacing: 18,
-                          mainAxisSpacing: 18,
-                          childAspectRatio: gridAspectRatio,
-                        ),
-                        delegate: SliverChildBuilderDelegate((context, index) {
-                          final template = capabilities[index];
-                          final translatedCategory =
-                              'home.categories.${template.categoryId}'.tr();
-                          return _CapabilityCard(
-                            template: template,
-                            categoryLabel: translatedCategory,
-                            placeholderLabel: _homeTr('visualPlaceholder'),
-                            usageLabel: _homeTr('usageRuns'),
-                            creditsLabel: _homeTr('creditsSuffix'),
-                            usageValue: '${template.usageCount}',
-                            creditsValue: '+${template.creditCost}',
-                            applyLabel: 'common.apply'.tr(),
-                            onTap: () => _handleCapabilityTap(template),
-                          );
-                        }, childCount: capabilities.length),
-                      ),
-              ),
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 44, 20, 0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _SectionHeader(
-                        title: _homeTr('modesTitle'),
-                        subtitle: _homeTr('modesDescription'),
-                      ),
-                      const SizedBox(height: 16),
-                      _ModeScroller(
-                        modes: homeModes,
-                        selectedModeId: _selectedModeId,
-                        onModeSelected: _handleModeTap,
-                        titleBuilder: _modeTitleLabel,
-                        badgeBuilder: _modeBadgeLabel,
+                        onSelected: _handleCategorySelect,
                       ),
                     ],
                   ),
@@ -241,35 +139,24 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               SliverToBoxAdapter(
                 child: Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 48, 20, 0),
+                  padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       _SectionHeader(
-                        title: _homeTr('quickActionsTitle'),
-                        subtitle: _homeTr('quickActionsDescription'),
-                        trailing: TextButton(
-                          onPressed: () {},
-                          child: Text(_homeTr('quickActionsMore')),
-                        ),
+                        title: 'Hızlı başlangıçlar',
+                        subtitle: 'Dakikalar içinde hazır senaryoları deneyin',
                       ),
                       const SizedBox(height: 16),
                       SizedBox(
-                        height: 196,
-                        child: ListView.separated(
-                          scrollDirection: Axis.horizontal,
-                          itemCount: homeQuickActions.length,
-                          separatorBuilder: (_, __) =>
-                              const SizedBox(width: 16),
-                          itemBuilder: (context, index) {
-                            final action = homeQuickActions[index];
-                            return _QuickActionCard(
-                              action: action,
-                              statusLabel: quickActionStatus,
-                              actionLabel: quickActionCTA,
-                              onTap: () => _handleQuickAction(action),
-                            );
-                          },
+                        height: 240,
+                        child: _QuickActionCarousel(
+                          controller: _quickActionController,
+                          actions: homeQuickActions,
+                          statusLabel: quickActionStatus,
+                          actionLabel: quickActionCTA,
+                          onTap: _handleQuickAction,
+                          onInteraction: _startQuickActionTicker,
                         ),
                       ),
                     ],
@@ -278,17 +165,42 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               SliverToBoxAdapter(
                 child: Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 40, 20, 0),
+                  padding: const EdgeInsets.fromLTRB(20, 32, 20, 0),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      _SectionHeader(
-                        title: _homeTr('trendsTitle'),
-                        subtitle: _homeTr('trendsDescription'),
-                        trailing: TextButton(
-                          onPressed: () {},
-                          child: Text(_homeTr('viewAll')),
-                        ),
+                      Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 6,
+                            ),
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(14),
+                              color: Colors.white.withValues(alpha: 0.1),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: const [
+                                Icon(
+                                  Icons.auto_graph_rounded,
+                                  size: 16,
+                                  color: Colors.white,
+                                ),
+                                SizedBox(width: 6),
+                                Text(
+                                  'Trend keşifleri',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const Spacer(),
+                        ],
                       ),
                       const SizedBox(height: 16),
                       SizedBox(
@@ -309,6 +221,25 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                     ],
                   ),
+                ),
+              ),
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 36, 20, 0),
+                  child: _SectionHeader(
+                    title: 'Hızlı kategoriler',
+                    subtitle: 'Favori tarzını seç, üstteki akış anında yenilensin',
+                  ),
+                ),
+              ),
+              SliverPadding(
+                padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
+                sliver: _CategoryShowcaseGrid(
+                  categories: videoCategories
+                      .where((category) => category.id != 'all')
+                      .toList(),
+                  selectedId: _selectedCategoryId,
+                  onSelected: _handleCategorySelect,
                 ),
               ),
               SliverToBoxAdapter(
@@ -438,105 +369,6 @@ class _EnergyPill extends StatelessWidget {
   }
 }
 
-class _ModeScroller extends StatelessWidget {
-  const _ModeScroller({
-    required this.modes,
-    required this.selectedModeId,
-    required this.onModeSelected,
-    required this.titleBuilder,
-    required this.badgeBuilder,
-  });
-
-  final List<HomeMode> modes;
-  final String selectedModeId;
-  final ValueChanged<HomeMode> onModeSelected;
-  final String Function(String id) titleBuilder;
-  final String? Function(String? key) badgeBuilder;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return SizedBox(
-      height: 68,
-      child: ListView.separated(
-        scrollDirection: Axis.horizontal,
-        itemCount: modes.length,
-        separatorBuilder: (_, __) => const SizedBox(width: 12),
-        itemBuilder: (context, index) {
-          final mode = modes[index];
-          final isActive = selectedModeId == mode.id;
-          final label = titleBuilder(mode.id);
-          final badge = badgeBuilder(mode.badgeKey);
-          return GestureDetector(
-            onTap: () => onModeSelected(mode),
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 220),
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(22),
-                gradient: isActive
-                    ? const LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: [
-                          Color(0xFF2A55FF),
-                          Color(0xFF4F46E5),
-                        ],
-                      )
-                    : null,
-                color: isActive ? null : Colors.white.withValues(alpha: 0.04),
-                border: Border.all(
-                  color: isActive
-                      ? Colors.white.withValues(alpha: 0.35)
-                      : Colors.white.withValues(alpha: 0.06),
-                ),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    mode.icon,
-                    color: Colors.white,
-                    size: 20,
-                  ),
-                  const SizedBox(width: 10),
-                  Text(
-                    label,
-                    style: theme.textTheme.labelLarge?.copyWith(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  if (badge != null) ...[
-                    const SizedBox(width: 10),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 4,
-                      ),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(14),
-                        color: Colors.white.withValues(alpha: 0.12),
-                      ),
-                      child: Text(
-                        badge.toUpperCase(),
-                        style: theme.textTheme.labelSmall?.copyWith(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                  ],
-                ],
-              ),
-            ),
-          );
-        },
-      ),
-    );
-  }
-}
-
 class _CategoryTabStrip extends StatelessWidget {
   const _CategoryTabStrip({
     required this.categories,
@@ -596,6 +428,141 @@ class _CategoryTabStrip extends StatelessWidget {
   }
 }
 
+class _CategoryShowcaseGrid extends StatelessWidget {
+  const _CategoryShowcaseGrid({
+    required this.categories,
+    required this.selectedId,
+    required this.onSelected,
+  });
+
+  final List<VideoCategory> categories;
+  final String selectedId;
+  final ValueChanged<String> onSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    return SliverGrid(
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 3,
+        mainAxisSpacing: 18,
+        crossAxisSpacing: 16,
+        childAspectRatio: 1.15,
+      ),
+      delegate: SliverChildBuilderDelegate(
+        (context, index) {
+          final category = categories[index];
+          final isActive = selectedId == category.id;
+          return _CategoryShowcaseCard(
+            category: category,
+            isActive: isActive,
+            onTap: () => onSelected(category.id),
+          );
+        },
+        childCount: categories.length,
+      ),
+    );
+  }
+}
+
+class _CategoryShowcaseCard extends StatelessWidget {
+  const _CategoryShowcaseCard({
+    required this.category,
+    required this.isActive,
+    required this.onTap,
+  });
+
+  final VideoCategory category;
+  final bool isActive;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final baseColor = category.color;
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 220),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(22),
+          border: Border.all(
+            color: Colors.white.withValues(alpha: isActive ? 0.45 : 0.12),
+            width: isActive ? 2 : 1,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color:
+                  (isActive ? baseColor : Colors.black).withValues(alpha: 0.22),
+              blurRadius: isActive ? 18 : 12,
+              offset: const Offset(0, 8),
+            ),
+          ],
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(20),
+          child: Stack(
+            children: [
+              Positioned.fill(
+                child: Image.network(
+                  category.imageUrl,
+                  fit: BoxFit.cover,
+                  errorBuilder: (_, __, ___) =>
+                      Container(color: baseColor.withValues(alpha: 0.4)),
+                ),
+              ),
+              Positioned.fill(
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        Colors.black.withValues(alpha: 0.1),
+                        baseColor.withValues(alpha: 0.65),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      width: 34,
+                      height: 34,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.white.withValues(alpha: 0.22),
+                      ),
+                      child: Icon(
+                        category.icon,
+                        color: Colors.white,
+                        size: 18,
+                      ),
+                    ),
+                    const Spacer(),
+                    Text(
+                      category.title,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class _SectionHeader extends StatelessWidget {
   const _SectionHeader({
     required this.title,
@@ -644,6 +611,107 @@ class _SectionHeader extends StatelessWidget {
   }
 }
 
+class _QuickActionCarousel extends StatelessWidget {
+  const _QuickActionCarousel({
+    required this.controller,
+    required this.actions,
+    required this.statusLabel,
+    required this.actionLabel,
+    required this.onTap,
+    required this.onInteraction,
+  });
+
+  final PageController controller;
+  final List<HomeQuickAction> actions;
+  final String statusLabel;
+  final String actionLabel;
+  final ValueChanged<HomeQuickAction> onTap;
+  final VoidCallback onInteraction;
+
+  @override
+  Widget build(BuildContext context) {
+    if (actions.isEmpty) {
+      return const SizedBox.shrink();
+    }
+    return Stack(
+      children: [
+        Positioned(
+          top: 0,
+          left: 0,
+          child: _QuickActionIndicator(
+            controller: controller,
+            itemCount: actions.length,
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.only(top: 24),
+          child: PageView.builder(
+            controller: controller,
+            itemCount: actions.length,
+            onPageChanged: (_) => onInteraction(),
+            itemBuilder: (context, index) {
+              final action = actions[index];
+              return Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 2),
+                child: _QuickActionCard(
+                  action: action,
+                  statusLabel: statusLabel,
+                  actionLabel: actionLabel,
+                  onTap: () => onTap(action),
+                ),
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _QuickActionIndicator extends StatelessWidget {
+  const _QuickActionIndicator({
+    required this.controller,
+    required this.itemCount,
+  });
+
+  final PageController controller;
+  final int itemCount;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(left: 6, top: 4),
+      child: AnimatedBuilder(
+        animation: controller,
+        builder: (context, _) {
+          double page =
+              controller.hasClients && controller.position.haveDimensions
+                  ? controller.page ?? controller.initialPage.toDouble()
+                  : controller.initialPage.toDouble();
+          return Row(
+            mainAxisSize: MainAxisSize.min,
+            children: List.generate(itemCount, (index) {
+              final isActive = (page - index).abs() < 0.5;
+              return AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                margin: const EdgeInsets.only(right: 6),
+                width: isActive ? 10 : 6,
+                height: isActive ? 10 : 6,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: isActive
+                      ? Colors.white
+                      : Colors.white.withValues(alpha: 0.35),
+                ),
+              );
+            }),
+          );
+        },
+      ),
+    );
+  }
+}
+
 class _QuickActionCard extends StatelessWidget {
   const _QuickActionCard({
     required this.action,
@@ -662,109 +730,106 @@ class _QuickActionCard extends StatelessWidget {
     final theme = Theme.of(context);
     return GestureDetector(
       onTap: onTap,
-      child: SizedBox(
-        width: 220,
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(22),
-          child: Stack(
-            children: [
-              Positioned.fill(
-                child: Image.network(
-                  action.imageUrl,
-                  fit: BoxFit.cover,
-                  color: Colors.black.withValues(alpha: 0.15),
-                  colorBlendMode: BlendMode.darken,
-                  errorBuilder: (_, __, ___) =>
-                      Container(color: action.color.withValues(alpha: 0.4)),
-                ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(22),
+        child: Stack(
+          children: [
+            Positioned.fill(
+              child: Image.network(
+                action.imageUrl,
+                fit: BoxFit.cover,
+                color: Colors.black.withValues(alpha: 0.15),
+                colorBlendMode: BlendMode.darken,
+                errorBuilder: (_, __, ___) =>
+                    Container(color: action.color.withValues(alpha: 0.4)),
               ),
-              Positioned.fill(
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [
-                        Colors.black.withValues(alpha: 0.05),
-                        action.color.withValues(alpha: 0.85),
-                      ],
-                    ),
+            ),
+            Positioned.fill(
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Colors.black.withValues(alpha: 0.05),
+                      action.color.withValues(alpha: 0.85),
+                    ],
                   ),
                 ),
               ),
-              Padding(
-                padding: const EdgeInsets.all(18),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 5,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.25),
-                        borderRadius: BorderRadius.circular(14),
-                      ),
-                      child: Text(
-                        action.badge,
-                        style: theme.textTheme.labelSmall?.copyWith(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(18),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 5,
                     ),
-                    const Spacer(),
-                    Text(
-                      action.title,
-                      style: theme.textTheme.titleMedium?.copyWith(
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.25),
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    child: Text(
+                      action.badge,
+                      style: theme.textTheme.labelSmall?.copyWith(
                         color: Colors.white,
-                        fontWeight: FontWeight.w700,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
-                    const SizedBox(height: 6),
-                    Text(
-                      action.subtitle,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: Colors.white.withValues(alpha: 0.9),
-                      ),
+                  ),
+                  const Spacer(),
+                  Text(
+                    action.title,
+                    style: theme.textTheme.titleLarge?.copyWith(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w700,
                     ),
-                    const SizedBox(height: 14),
-                    Row(
-                      children: [
-                        Text(
-                          statusLabel,
-                          style: theme.textTheme.labelSmall?.copyWith(
-                            color: Colors.white.withValues(alpha: 0.85),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    action.subtitle,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: Colors.white.withValues(alpha: 0.9),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    children: [
+                      Text(
+                        statusLabel,
+                        style: theme.textTheme.labelSmall?.copyWith(
+                          color: Colors.white.withValues(alpha: 0.85),
+                        ),
+                      ),
+                      const Spacer(),
+                      Row(
+                        children: [
+                          Text(
+                            actionLabel,
+                            style: theme.textTheme.labelSmall?.copyWith(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
-                        ),
-                        const Spacer(),
-                        Row(
-                          children: [
-                            Text(
-                              actionLabel,
-                              style: theme.textTheme.labelSmall?.copyWith(
-                                color: Colors.white,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                            const SizedBox(width: 6),
-                            Icon(
-                              Icons.arrow_outward_rounded,
-                              size: 18,
-                              color: Colors.white.withValues(alpha: 0.9),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
+                          const SizedBox(width: 6),
+                          Icon(
+                            Icons.arrow_outward_rounded,
+                            size: 18,
+                            color: Colors.white.withValues(alpha: 0.9),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ],
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
@@ -873,249 +938,6 @@ class _TrendCard extends StatelessWidget {
               ),
             ],
           ),
-        ),
-      ),
-    );
-  }
-}
-
-class _CapabilityCard extends StatelessWidget {
-  const _CapabilityCard({
-    required this.template,
-    required this.categoryLabel,
-    required this.placeholderLabel,
-    required this.usageLabel,
-    required this.creditsLabel,
-    required this.usageValue,
-    required this.creditsValue,
-    required this.applyLabel,
-    required this.onTap,
-  });
-
-  final CapabilityTemplate template;
-  final String categoryLabel;
-  final String placeholderLabel;
-  final String usageLabel;
-  final String creditsLabel;
-  final String usageValue;
-  final String creditsValue;
-  final String applyLabel;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final accent = theme.colorScheme.primary;
-    final surface = Colors.white.withValues(alpha: 0.04);
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(22),
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Colors.white.withValues(alpha: 0.08),
-              Colors.white.withValues(alpha: 0.02),
-            ],
-          ),
-          border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.18),
-              blurRadius: 18,
-              offset: const Offset(0, 10),
-            ),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Stack(
-              children: [
-                AspectRatio(
-                  aspectRatio: 4 / 3,
-                  child: ClipRRect(
-                    borderRadius: const BorderRadius.vertical(
-                      top: Radius.circular(22),
-                    ),
-                    child: Stack(
-                      fit: StackFit.expand,
-                      children: [
-                        if (template.imageUrl != null)
-                          Image.network(
-                            template.imageUrl!,
-                            fit: BoxFit.cover,
-                            errorBuilder: (_, __, ___) =>
-                                Container(color: accent.withValues(alpha: 0.2)),
-                          )
-                        else
-                          Container(color: surface),
-                        Positioned.fill(
-                          child: DecoratedBox(
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                begin: Alignment.topCenter,
-                                end: Alignment.bottomCenter,
-                                colors: [
-                                  Colors.black.withValues(alpha: 0.05),
-                                  Colors.black.withValues(alpha: 0.55),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                Positioned(
-                  top: 14,
-                  left: 14,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 4,
-                    ),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(14),
-                      color: Colors.white.withValues(alpha: 0.18),
-                    ),
-                    child: Text(
-                      placeholderLabel,
-                      style: theme.textTheme.labelSmall?.copyWith(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 14, 16, 16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 10,
-                          vertical: 4,
-                        ),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(12),
-                          color: Colors.white.withValues(alpha: 0.1),
-                        ),
-                        child: Text(
-                          categoryLabel,
-                          style: theme.textTheme.labelSmall?.copyWith(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                      const Spacer(),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 4,
-                        ),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(14),
-                          color: accent.withValues(alpha: 0.2),
-                          border: Border.all(
-                            color: accent.withValues(alpha: 0.4),
-                          ),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Icon(
-                              Icons.bolt,
-                              size: 14,
-                              color: Colors.white,
-                            ),
-                            const SizedBox(width: 6),
-                            Text(
-                              '$creditsValue $creditsLabel',
-                              style: theme.textTheme.labelSmall?.copyWith(
-                                color: Colors.white,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  Text(
-                    template.title,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: theme.textTheme.titleMedium?.copyWith(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    template.subtitle,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: Colors.white70,
-                    ),
-                  ),
-                  const SizedBox(height: 14),
-                  Row(
-                    children: [
-                      Icon(
-                        Icons.download_done_outlined,
-                        size: 16,
-                        color: Colors.white60,
-                      ),
-                      const SizedBox(width: 6),
-                      Expanded(
-                        child: Text(
-                          '$usageValue $usageLabel',
-                          maxLines: 1,
-                          overflow: TextOverflow.fade,
-                          softWrap: false,
-                          style: theme.textTheme.labelSmall?.copyWith(
-                            color: Colors.white70,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      FilledButton.tonalIcon(
-                        onPressed: onTap,
-                        style: FilledButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 10,
-                          ),
-                          backgroundColor:
-                              Colors.white.withValues(alpha: 0.14),
-                          foregroundColor: Colors.white,
-                          textStyle: theme.textTheme.labelMedium?.copyWith(
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                        icon: const Icon(
-                          Icons.play_arrow_rounded,
-                          size: 18,
-                        ),
-                        label: Text(applyLabel),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ],
         ),
       ),
     );
