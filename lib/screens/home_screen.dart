@@ -198,6 +198,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
+                            const SizedBox(height: 12),
                             Text(
                               'Platform genelinde öne çıkan içerikler',
                               style: theme.textTheme.titleMedium?.copyWith(
@@ -205,7 +206,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 color: Colors.white,
                               ),
                             ),
-                            const SizedBox(height: 2),
+                            const SizedBox(height: 8),
                             SizedBox(
                               height: 240,
                               child: _QuickActionCarousel(
@@ -402,83 +403,69 @@ class _CategoryTabStrip extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         SizedBox(
-          height: 38,
-          child: Stack(
-            alignment: Alignment.bottomCenter,
-            clipBehavior: Clip.none,
-            children: [
-              ListView.separated(
-                scrollDirection: Axis.horizontal,
-                itemCount: categories.length,
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                separatorBuilder: (_, __) => const SizedBox(width: 18),
-                itemBuilder: (context, index) {
-                  final category = categories[index];
-                  final isActive = category.id == selectedId;
-                  return GestureDetector(
-                    behavior: HitTestBehavior.opaque,
-                    onTap: () => onSelected(category.id),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        AnimatedDefaultTextStyle(
-                          duration: const Duration(milliseconds: 220),
-                          curve: Curves.easeOutCubic,
-                          style: theme.textTheme.labelLarge?.copyWith(
-                                fontWeight: isActive
-                                    ? FontWeight.w700
-                                    : FontWeight.w500,
-                                color: isActive
-                                    ? Colors.white
-                                    : Colors.white.withOpacity(0.62),
-                                letterSpacing: 0.2,
-                              ) ??
-                              TextStyle(
-                                fontWeight: isActive
-                                    ? FontWeight.w700
-                                    : FontWeight.w500,
-                                color: isActive
-                                    ? Colors.white
-                                    : Colors.white.withOpacity(0.62),
-                                fontSize: 13,
-                              ),
-                          child: Text(category.title),
-                        ),
-                        const SizedBox(height: 5),
-                        AnimatedContainer(
-                          duration: const Duration(milliseconds: 220),
-                          curve: Curves.easeOutCubic,
-                          height: 3,
-                          width: isActive ? 28 : 0,
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(12),
-                            gradient: isActive
-                                ? const LinearGradient(
-                                    colors: [
-                                      Color(0xFF4D9FFF),
-                                      Color(0xFF2B6BFF)
-                                    ],
-                                  )
-                                : null,
-                            color: isActive ? null : Colors.transparent,
+          height: 34,
+          child: ListView.separated(
+            scrollDirection: Axis.horizontal,
+            itemCount: categories.length,
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            separatorBuilder: (_, __) => const SizedBox(width: 18),
+            itemBuilder: (context, index) {
+              final category = categories[index];
+              final isActive = category.id == selectedId;
+              return GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: () => onSelected(category.id),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const SizedBox(height: 2),
+                    AnimatedDefaultTextStyle(
+                      duration: const Duration(milliseconds: 220),
+                      curve: Curves.easeOutCubic,
+                      style: theme.textTheme.labelLarge?.copyWith(
+                            fontWeight: isActive
+                                ? FontWeight.w700
+                                : FontWeight.w500,
+                            color: isActive
+                                ? Colors.white
+                                : Colors.white.withOpacity(0.62),
+                            letterSpacing: 0.2,
+                          ) ??
+                          TextStyle(
+                            fontWeight: isActive
+                                ? FontWeight.w700
+                                : FontWeight.w500,
+                            color: isActive
+                                ? Colors.white
+                                : Colors.white.withOpacity(0.62),
+                            fontSize: 13,
                           ),
-                        ),
-                      ],
+                      child: Text(category.title),
                     ),
-                  );
-                },
-              ),
-              Positioned(
-                left: 0,
-                right: 0,
-                bottom: -1,
-                child: Container(
-                  height: 1,
-                  color: Colors.white.withOpacity(0.06),
+                    const SizedBox(height: 4),
+                    AnimatedContainer(
+                      duration: const Duration(milliseconds: 220),
+                      curve: Curves.easeOutCubic,
+                      height: 3,
+                      width: isActive ? 28 : 0,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(12),
+                        gradient: isActive
+                            ? const LinearGradient(
+                                colors: [
+                                  Color(0xFF4D9FFF),
+                                  Color(0xFF2B6BFF)
+                                ],
+                              )
+                            : null,
+                        color: isActive ? null : Colors.transparent,
+                      ),
+                    ),
+                  ],
                 ),
-              ),
-            ],
+              );
+            },
           ),
         ),
       ],
@@ -1089,7 +1076,7 @@ class _HomePinnedHeaderDelegate extends SliverPersistentHeaderDelegate {
         gradient: const LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: [Color(0xFF161616), Color(0xFF111218)],
+          colors: [Color(0xFF161616), Color(0xFF131313)],
         ),
         border: Border(
           bottom: BorderSide(color: Colors.white.withOpacity(0.05)),
