@@ -104,7 +104,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 accent: accent,
               ),
               const SizedBox(height: 16),
-              _PlanInfoSection(isSubscription: _selectedTab == 0),
+              _PlanInfoSection(isSubscription: _selectedTab == 0, accent: accent),
               const SizedBox(height: 16),
               GridView.builder(
                 shrinkWrap: true,
@@ -184,9 +184,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                 ),
               ),
-              const SizedBox(height: 28),
-              _PlanSummaryCard(accent: accent),
-              const SizedBox(height: 32),
               _QuickActionTile(
                 icon: Icons.star,
                 title: 'Rate the app',
@@ -493,146 +490,10 @@ class _PlanPill extends StatelessWidget {
   }
 }
 
-class _PlanSummaryCard extends StatelessWidget {
-  const _PlanSummaryCard({required this.accent});
+class _PlanInfoSection extends StatelessWidget {
+  const _PlanInfoSection({required this.isSubscription, required this.accent});
 
   final Color accent;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Container(
-      padding: const EdgeInsets.all(22),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(28),
-        color: Colors.white.withOpacity(0.02),
-        border: Border.all(color: Colors.white.withOpacity(0.05)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: const [
-              _PlanOptionTile(
-                title: 'Free',
-                subtitle: '8 credits per week',
-                highlighted: true,
-              ),
-              SizedBox(width: 12),
-              _PlanOptionTile(
-                title: 'Premium',
-                subtitle: '100 credits per month',
-                highlighted: false,
-              ),
-            ],
-          ),
-          const SizedBox(height: 20),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(20),
-              gradient: LinearGradient(
-                colors: [
-                  accent.withOpacity(0.24),
-                  accent.withOpacity(0.08),
-                ],
-              ),
-            ),
-            child: Row(
-              children: [
-                Icon(Icons.schedule, color: Colors.white.withOpacity(0.9)),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Next reload',
-                        style: theme.textTheme.labelMedium?.copyWith(
-                          color: Colors.white70,
-                        ),
-                      ),
-                      Text(
-                        'December 10, 2025',
-                        style: theme.textTheme.bodyMedium?.copyWith(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                TextButton(
-                  onPressed: () {},
-                  style: TextButton.styleFrom(
-                    foregroundColor: Colors.white,
-                  ),
-                  child: const Text('See history'),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _PlanOptionTile extends StatelessWidget {
-  const _PlanOptionTile({
-    required this.title,
-    required this.subtitle,
-    required this.highlighted,
-  });
-
-  final String title;
-  final String subtitle;
-  final bool highlighted;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Expanded(
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(20),
-          color: highlighted
-              ? Colors.white.withOpacity(0.12)
-              : Colors.white.withOpacity(0.04),
-          border: Border.all(
-            color: highlighted
-                ? Colors.white.withOpacity(0.25)
-                : Colors.white.withOpacity(0.06),
-          ),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              title,
-              style: theme.textTheme.titleMedium?.copyWith(
-                color: Colors.white,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-            const SizedBox(height: 6),
-            Text(
-              subtitle,
-              style: theme.textTheme.bodySmall?.copyWith(
-                color: Colors.white70,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _PlanInfoSection extends StatelessWidget {
-  const _PlanInfoSection({required this.isSubscription});
-
   final bool isSubscription;
 
   static const _subscriptionBenefits = [
@@ -651,9 +512,7 @@ class _PlanInfoSection extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final benefits = isSubscription ? _subscriptionBenefits : _creditBenefits;
-    final title = isSubscription
-        ? 'Why choose a subscription?'
-        : 'Why choose credit packs?';
+    final title = isSubscription ? 'Subscription benefits' : 'Credit pack benefits';
 
     return Container(
       padding: const EdgeInsets.all(20),
@@ -671,9 +530,48 @@ class _PlanInfoSection extends StatelessWidget {
               fontWeight: FontWeight.w700,
             ),
           ),
-          const SizedBox(height: 12),
-          for (final benefit in benefits)
-            _BenefitRow(icon: benefit.$1, text: benefit.$2),
+          const SizedBox(height: 18),
+          Row(
+            children: [
+              Container(
+                width: 48,
+                height: 48,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(16),
+                  color: accent.withOpacity(0.18),
+                ),
+                child: Icon(
+                  isSubscription ? Icons.loop_rounded : Icons.offline_bolt_outlined,
+                  color: Colors.white,
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Text(
+                  isSubscription
+                      ? 'Stay topped up automatically so your team never pauses production.'
+                      : 'Add flexibility with on-demand credits that never expire.',
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: Colors.white70,
+                    height: 1.4,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 18),
+          Wrap(
+            spacing: 12,
+            runSpacing: 12,
+            children: benefits
+                .map(
+                  (benefit) => _BenefitChip(
+                    icon: benefit.$1,
+                    text: benefit.$2,
+                  ),
+                )
+                .toList(),
+          ),
         ],
       ),
     );
@@ -708,6 +606,40 @@ class _BenefitRow extends StatelessWidget {
               style: theme.textTheme.bodyMedium?.copyWith(
                 color: Colors.white70,
               ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _BenefitChip extends StatelessWidget {
+  const _BenefitChip({required this.icon, required this.text});
+
+  final IconData icon;
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(18),
+        color: Colors.white.withOpacity(0.03),
+        border: Border.all(color: Colors.white.withOpacity(0.06)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, color: Colors.white.withOpacity(0.88), size: 16),
+          const SizedBox(width: 8),
+          Text(
+            text,
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: Colors.white70,
+              fontWeight: FontWeight.w500,
             ),
           ),
         ],

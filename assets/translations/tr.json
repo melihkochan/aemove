@@ -11,12 +11,6 @@
     "privacyPolicy": "Privacy Policy",
     "termsOfService": "Terms of Service"
   },
-  "nav": {
-    "home": "Home",
-    "create": "Create",
-    "videos": "My Videos",
-    "account": "Account"
-  },
   "home": {
     "subtitle": "Multi-model video studio",
     "statsUsage": "Template runs",

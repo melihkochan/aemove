@@ -146,7 +146,7 @@ class _NavButton extends StatelessWidget {
               borderRadius: BorderRadius.circular(22),
               color: isActive
                   ? accent.withValues(alpha: 0.18)
-                  : Colors.white.withValues(alpha: 0.015),
+                  : Colors.white.withValues(alpha: 0.04),
             ),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -168,7 +168,7 @@ class _NavButton extends StatelessWidget {
                         : null,
                     color: isActive
                         ? null
-                        : Colors.white.withValues(alpha: 0.08),
+                        : Colors.white.withValues(alpha: 0.16),
                     boxShadow: isActive
                         ? [
                             BoxShadow(
@@ -206,12 +206,7 @@ class _NavButton extends StatelessWidget {
                             ? Colors.white
                             : Colors.white.withValues(alpha: 0.75),
                       ),
-                  child: Text(
-                    'nav.${item.labelKey}'.tr(),
-                    maxLines: 1,
-                    overflow: TextOverflow.fade,
-                    softWrap: false,
-                  ),
+                  child: Text(item.labelKey),
                 ),
               ],
             ),
@@ -247,10 +242,13 @@ class _FrostedNavBar extends StatelessWidget {
             gradient: LinearGradient(
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
-              colors: [glassStart, glassEnd],
+              colors: [
+                glassStart.withOpacity(0.55),
+                glassEnd.withOpacity(0.22),
+              ],
             ),
             border: Border.all(
-              color: Colors.white.withOpacity(0.08),
+              color: Colors.white.withOpacity(0.05),
             ),
             borderRadius: BorderRadius.circular(24),
           ),
