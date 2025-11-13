@@ -49,18 +49,30 @@ class _MainShellState extends State<MainShell> {
 
   @override
   Widget build(BuildContext context) {
+    final mediaQuery = MediaQuery.of(context);
+    final bottomInset = mediaQuery.padding.bottom;
     return Scaffold(
-      body: IndexedStack(index: _currentIndex, children: _pages),
-      bottomNavigationBar: SafeArea(
-        top: false,
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(12, 0, 12, 16),
-          child: _FrostedNavBar(
-            items: _items,
-            currentIndex: _currentIndex,
-            onItemSelected: (index) => setState(() => _currentIndex = index),
+      extendBody: true,
+      body: Stack(
+        children: [
+          Positioned.fill(
+            child: IndexedStack(index: _currentIndex, children: _pages),
           ),
-        ),
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: Padding(
+              padding: EdgeInsets.fromLTRB(12, 0, 12, bottomInset + 12),
+              child: _FrostedNavBar(
+                items: _items,
+                currentIndex: _currentIndex,
+                onItemSelected: (index) =>
+                    setState(() => _currentIndex = index),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -98,27 +110,15 @@ class _NavButton extends StatelessWidget {
       onTap: onTap,
       behavior: HitTestBehavior.opaque,
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 6),
         child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          duration: const Duration(milliseconds: 220),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(18),
-            gradient: isActive
-                ? LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [
-                      accent.withValues(alpha: 0.64),
-                      accent.withValues(alpha: 0.42),
-                    ],
-                  )
-                : null,
-            color: isActive ? null : Colors.transparent,
+            borderRadius: BorderRadius.circular(20),
+            color: Colors.white.withValues(alpha: isActive ? 0.12 : 0.02),
             border: Border.all(
-              color: isActive
-                  ? accent.withValues(alpha: 0.65)
-                  : Colors.transparent,
+              color: Colors.white.withValues(alpha: isActive ? 0.18 : 0.06),
             ),
           ),
           child: Column(
@@ -126,17 +126,17 @@ class _NavButton extends StatelessWidget {
             children: [
               Icon(
                 isActive ? item.activeIcon : item.icon,
-                color: isActive ? Colors.white : Colors.white70,
-                size: 26,
+                color: Colors.white,
+                size: 24,
               ),
-              const SizedBox(height: 6),
+              const SizedBox(height: 4),
               Text(
                 'nav.${item.labelKey}'.tr(),
                 maxLines: 1,
                 overflow: TextOverflow.fade,
                 softWrap: false,
                 style: theme.textTheme.labelMedium?.copyWith(
-                  color: isActive ? Colors.white : Colors.white60,
+                  color: Colors.white,
                   fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
                 ),
               ),
@@ -162,32 +162,33 @@ class _FrostedNavBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final glassStart = Colors.white.withValues(alpha: 0.04);
+    final glassEnd = Colors.white.withValues(alpha: 0.01);
     return ClipRRect(
-      borderRadius: BorderRadius.circular(30),
+      borderRadius: BorderRadius.circular(24),
       child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 22, sigmaY: 22),
+        filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
         child: DecoratedBox(
           decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                Color(0xFF10192f),
-                Color(0xFF0b1324),
-              ],
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [glassStart, glassEnd],
             ),
-            borderRadius: BorderRadius.circular(30),
-            border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(
+              color: Colors.white.withValues(alpha: 0.06),
+            ),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.35),
-                blurRadius: 30,
-                offset: const Offset(0, 18),
+                color: Colors.black.withValues(alpha: 0.05),
+                blurRadius: 10,
+                offset: const Offset(0, 2),
               ),
             ],
           ),
           child: SizedBox(
-            height: 84,
+            height: 72,
             child: Row(
               children: items.asMap().entries.map((entry) {
                 final index = entry.key;
